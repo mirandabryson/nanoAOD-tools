@@ -13,7 +13,7 @@ class lumiWeightProducer(Module):
 
     def __init__(self, lumiScaleFactor, isData=False):
         self.isData             = isData
-        self.lumiScaleFactor    = lumiScaleFactor
+        self.lumiScaleFactor    = float(lumiScaleFactor)
 
     def beginJob(self):
         pass
