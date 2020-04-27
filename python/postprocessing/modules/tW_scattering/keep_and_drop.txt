@@ -10,3 +10,4 @@ keep event
 keep run
 keep luminosityBlock
 keep genWeight
+keep weight
