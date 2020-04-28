@@ -1,0 +1,13 @@
+# this is a comment
+drop * # start with all
+keep Jet*
+keep GenJet*
+keep GenPart*
+keep FatJet*
+keep Electron*
+keep Muon*
+keep MET*
+keep event
+keep run
+keep luminosityBlock
+keep genWeight

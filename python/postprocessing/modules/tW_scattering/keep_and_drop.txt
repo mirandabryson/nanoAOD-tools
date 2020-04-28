@@ -2,6 +2,7 @@
 drop * # start with all
 keep Jet*
 keep FatJet*
+keep GenJet*
 keep Electron*
 keep Muon*
 keep MET*
@@ -11,3 +12,14 @@ keep run
 keep luminosityBlock
 keep genWeight
 keep weight
+keep nGoodBTag
+keep nGoodJet
+keep nLepFromTop
+keep nLepFromTau
+keep nLepFromW
+keep nLepFromZ
+keep GenL*
+keep W*
+keep Top*
+keep Spectator*
+keep Scatter*

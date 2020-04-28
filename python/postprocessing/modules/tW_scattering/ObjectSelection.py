@@ -46,13 +46,14 @@ class PhysicsObjects(Module):
         #self.out.branch("GoodJet_btag", "F", lenVar="nGoodJet")
 
         ##
-        self.out.branch("Muon_isVeto",      "F", lenVar="nMuon")
-        self.out.branch("Muon_isTight",     "F", lenVar="nMuon")
-        self.out.branch("Electron_isVeto",  "F", lenVar="nElectron")
-        self.out.branch("Electron_isTight", "F", lenVar="nElectron")
-        self.out.branch("Jet_isGoodJet",    "F", lenVar="nJet")
-        self.out.branch("Jet_isGoodBJet",   "F", lenVar="nJet")
-        self.out.branch("Jet_crossClean",   "F", lenVar="nJet")
+        self.out.branch("Muon_isVeto",      "I", lenVar="nMuon")
+        self.out.branch("Muon_isTight",     "I", lenVar="nMuon")
+        self.out.branch("Electron_isVeto",  "I", lenVar="nElectron")
+        self.out.branch("Electron_isTight", "I", lenVar="nElectron")
+        self.out.branch("Jet_isGoodJet",    "I", lenVar="nJet")
+        self.out.branch("Jet_isGoodJetAll", "I", lenVar="nJet")
+        self.out.branch("Jet_isGoodBJet",   "I", lenVar="nJet")
+        self.out.branch("Jet_leptonClean",  "I", lenVar="nJet")
 
 
         # Counter for good b-tags
@@ -64,7 +65,10 @@ class PhysicsObjects(Module):
         pass
 
     def isGoodJet(self, jet):
-        return (jet.pt > 30 and abs(jet.eta)<2.4 and jet.jetId>1)
+        return (jet.pt > 25 and abs(jet.eta)<2.4 and jet.jetId>1)
+
+    def isFwdJet(self, jet):
+        return (((jet.pt > 25 and abs(jet.eta)<2.7) or (jet.pt>60 and abs(jet.eta)>=2.7 and abs(jet.eta)<3.0) or (jet.pt>25 and abs(jet.eta)>=3.0 and abs(jet.eta)<5.0))  and jet.jetId>1)
 
     def isGoodBJet(self, jet):
         if self.year == 2018:
@@ -97,11 +101,22 @@ class PhysicsObjects(Module):
     def deltaR(self, l1, l2):
         return math.sqrt(self.deltaR2(l1,l2))
 
+    def invMass(self, o1, o2):
+        v1 = ROOT.TLorentzVector()
+        v2 = ROOT.TLorentzVector()
+        v1.SetPtEtaPhi(o1['pt'], o1['eta'], o1['phi'], 0)
+        v2.SetPtEtaPhi(o2['pt'], o2['eta'], o2['phi'], 0)
+        return (v1+v2).M()
+
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
         jets        = Collection(event, "Jet")
+
+        # MET
+        met_pt  = event.MET_pt
+        met_phi = event.MET_phi
 
         # tight lepton collection, will be sorted by pt
         leptons     = []
@@ -127,11 +142,17 @@ class PhysicsObjects(Module):
             if self.isTightElectron(el):
                 leptons.append({'pt':el.pt, 'eta':el.eta, 'phi':el.phi, 'pdgId':el.pdgId, 'miniIso':el.miniPFRelIso_all, 'muIndex':-1, 'elIndex':i})
 
+        leptons = sorted(leptons, key = lambda i: i['pt'], reverse=True)
         
 
         cleanMaskV  = []
         isGoodJet   = []
         isGoodBJet  = []
+        isGoodJetAll = []
+
+        fwdjets = []
+        jets_out    = []
+        bjets   = []
 
         for j in jets:
 
@@ -143,17 +164,52 @@ class PhysicsObjects(Module):
                             j.cleanMask = 0
 
             isGoodJet.append(1 if (self.isGoodJet(j) and j.cleanMask) else 0)
+            isGoodJetAll.append(1 if (self.isFwdJet(j) and j.cleanMask) else 0)
             isGoodBJet.append(1 if (self.isGoodBJet(j) and j.cleanMask) else 0)
             
             cleanMaskV.append(j.cleanMask)
 
-        self.out.fillBranch("Muon_isTight",      isTightMuon)
+            # Fill the other collections
+            if j.cleanMask:
+
+                if self.isGoodJet(j):
+                    jets_out.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                    
+                    if self.isGoodBJet(j):
+                        bjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                
+                if self.isFwdJet(j):
+                    fwdjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                       
+
+        # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
+        bjets       = sorted(bjets, key = lambda i: i['pt'], reverse=True)
+        fwdjets     = sorted(fwdjets, key = lambda i: i['pt'], reverse=True) # all jets, including forward ones
+        jets_out    = sorted(jets_out, key = lambda i: i['pt'], reverse=True)
+
+        # calculate MT, Mlb, Mlb_max, M_jj_b1, M_jj_b2 etc
+        Mlb_00 = -99 # leading lepton, first b-jet
+        Mlb_01 = -99 # leading lepton, second b-jet
+        Mlb_10 = -99 # trailing lepton, first b-jet
+        Mlb_11 = -99 # trailing lepton, second b-jet
+
+        #if len(jets)>0:
+        #    if len(leptons)>0:
+        #        Mlb_00 = 
+        #
+        #if len(leptons)>1
+
+
+        self.out.fillBranch("Muon_isTight",     isTightMuon)
         self.out.fillBranch("Muon_isVeto",      isVetoMuon)
-        self.out.fillBranch("Electron_isTight",  isTightElectron)
+        self.out.fillBranch("Electron_isTight", isTightElectron)
         self.out.fillBranch("Electron_isVeto",  isVetoElectron)
-        self.out.fillBranch("Jet_crossClean",   cleanMaskV)
+        self.out.fillBranch("Jet_leptonClean",   cleanMaskV)
         self.out.fillBranch("Jet_isGoodJet",    isGoodJet)
+        self.out.fillBranch("Jet_isGoodJetAll", isGoodJetAll)
         self.out.fillBranch("Jet_isGoodBJet",   isGoodBJet)
+        self.out.fillBranch("nGoodBTag",        sum(isGoodBJet))
+        self.out.fillBranch("nGoodJet",         sum(isGoodJet))
 
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)
