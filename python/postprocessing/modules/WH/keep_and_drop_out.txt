@@ -18,6 +18,8 @@ keep FatJet_deepTagMD_bbvsLight
 keep FatJet_deepTag_H
 keep FatJet_eta
 keep FatJet_phi
+keep FatJet_subJetIdx1
+keep FatJet_subJetIdx2
 
 keep nHiggs
 keep jup_nHiggs
