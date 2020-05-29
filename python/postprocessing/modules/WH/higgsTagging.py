@@ -8,8 +8,9 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 class higgsTagging(Module):
-    def __init__(self, year=2016):
+    def __init__(self, year=2016, isData=False):
         self.year = year
+        self.isData = isData
         if year == 2016:
             self.htagWP = 0.8945
         elif year == 2017:
@@ -30,8 +31,9 @@ class higgsTagging(Module):
         self.out = wrappedOutputTree
         self.out.branch("hasNano", "I")
         self.out.branch("nHiggs", "I")
-        self.out.branch("jup_nHiggs", "I")
-        self.out.branch("jdown_nHiggs", "I")
+        if not self.isData:
+            self.out.branch("jup_nHiggs", "I")
+            self.out.branch("jdown_nHiggs", "I")
         self.out.branch("w_higgsSF", "F")
         self.out.branch("w_higgsSFUp", "F")
         self.out.branch("w_higgsSFDown", "F")
@@ -67,17 +69,20 @@ class higgsTagging(Module):
         for j in jets:
             if j.pt_nom > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
                 nHiggs += 1
-                w_higgsSF *= self.getSF(j.pt_nom, sigma=0)
-                w_higgsSFUp *= self.getSF(j.pt_nom, sigma=1)
-                w_higgsSFDown *= self.getSF(j.pt_nom, sigma=-1)
-            if j.pt_jesTotalUp > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
-                jup_nHiggs += 1
-            if j.pt_jesTotalDown > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
-                jdown_nHiggs += 1
+                if not self.isData:
+                    w_higgsSF *= self.getSF(j.pt_nom, sigma=0)
+                    w_higgsSFUp *= self.getSF(j.pt_nom, sigma=1)
+                    w_higgsSFDown *= self.getSF(j.pt_nom, sigma=-1)
+            if not self.isData:
+                if j.pt_jesTotalUp > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
+                    jup_nHiggs += 1
+                if j.pt_jesTotalDown > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
+                    jdown_nHiggs += 1
             
         self.out.fillBranch("nHiggs", nHiggs)
-        self.out.fillBranch("jup_nHiggs", jup_nHiggs)
-        self.out.fillBranch("jdown_nHiggs", jdown_nHiggs)
+        if not self.isData:
+            self.out.fillBranch("jup_nHiggs", jup_nHiggs)
+            self.out.fillBranch("jdown_nHiggs", jdown_nHiggs)
 
         self.out.fillBranch("w_higgsSF", w_higgsSF)
         self.out.fillBranch("w_higgsSFUp", w_higgsSFUp)

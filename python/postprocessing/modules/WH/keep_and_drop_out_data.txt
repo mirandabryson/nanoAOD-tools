@@ -1,0 +1,28 @@
+# this is a comment
+drop * # start with all
+keep nSubJet
+keep SubJet_pt
+keep SubJet_eta
+keep SubJet_phi
+keep SubJet_btagDeepB
+
+keep nFatJet
+keep FatJet_pt
+keep FatJet_pt_nom
+keep FatJet_mass
+keep FatJet_msoftdrop
+keep FatJet_deepTagMD_HbbvsQCD
+keep FatJet_deepTagMD_bbvsLight
+keep FatJet_deepTag_H
+keep FatJet_eta
+keep FatJet_phi
+keep FatJet_subJetIdx1
+keep FatJet_subJetIdx2
+
+keep nHiggs
+
+keep hasNano
+
+keep run
+keep event
+keep luminosityBlock
