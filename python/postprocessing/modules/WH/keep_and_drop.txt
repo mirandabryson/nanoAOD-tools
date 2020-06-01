@@ -2,6 +2,7 @@
 drop * # start with all
 keep SubJet*
 keep FatJet*
+keep GenJetAK8*
 keep run
 keep event
 keep luminosityBlock

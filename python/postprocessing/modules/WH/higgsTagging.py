@@ -1,5 +1,6 @@
 import ROOT
 import os
+import math
 import numpy as np
 import pandas as pd
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -34,6 +35,7 @@ class higgsTagging(Module):
         if not self.isData:
             self.out.branch("jup_nHiggs", "I")
             self.out.branch("jdown_nHiggs", "I")
+            self.out.branch("FatJet_genPt", "F", lenVar="nFatJet")
         self.out.branch("w_higgsSF", "F")
         self.out.branch("w_higgsSFUp", "F")
         self.out.branch("w_higgsSFDown", "F")
@@ -51,11 +53,27 @@ class higgsTagging(Module):
             SF = float(self.SFs[(self.SFs['year']==self.year) & (self.SFs['wp']=='mp') & (self.SFs['ptmin']<pt) & (self.SFs['ptmax']>=pt)]['sf']) + float(self.SFs[(self.SFs['year']==self.year) & (self.SFs['wp']=='mp') & (self.SFs['ptmin']<pt) & (self.SFs['ptmax']>=pt)]['sfhigh'])
         return SF
 
+    def deltaPhi(self, phi1, phi2):
+        dphi = phi2-phi1
+        if  dphi > math.pi:
+            dphi -= 2.0*math.pi
+        if dphi <= -math.pi:
+            dphi += 2.0*math.pi
+        return abs(dphi)
+
+    def deltaR2(self, l1, l2):
+        return self.deltaPhi(l1.phi, l2.phi)**2 + (l1.eta - l2.eta)**2
+
+    def deltaR(self, l1, l2):
+        return math.sqrt(self.deltaR2(l1,l2))
+
 
     def analyze(self, event):
 
         """process event, return True (go to next module) or False (fail, go to next event)"""
         jets = Collection(event, "FatJet")
+        if not self.isData:
+            genjets = Collection(event, "GenJetAK8")
         ptmin = 250
 
         nHiggs = 0
@@ -66,13 +84,30 @@ class higgsTagging(Module):
         w_higgsSFUp = 1
         w_higgsSFDown = 1
 
+        jet_genPt = []
+
         for j in jets:
+            # GenJet matching
+            if not self.isData:
+                match = False
+                genPt = -1
+                for g in genjets:
+                    if self.deltaR(j, g)<0.8:
+                        match = True
+                        genPt = g.pt
+                        break
+                if match:
+                    jet_genPt.append(genPt)
+                else:
+                    jet_genPt.append(-1)
+
             if j.pt_nom > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
                 nHiggs += 1
                 if not self.isData:
                     w_higgsSF *= self.getSF(j.pt_nom, sigma=0)
                     w_higgsSFUp *= self.getSF(j.pt_nom, sigma=1)
                     w_higgsSFDown *= self.getSF(j.pt_nom, sigma=-1)
+
             if not self.isData:
                 if j.pt_jesTotalUp > ptmin and j.deepTagMD_HbbvsQCD > self.htagWP:
                     jup_nHiggs += 1
@@ -83,6 +118,7 @@ class higgsTagging(Module):
         if not self.isData:
             self.out.fillBranch("jup_nHiggs", jup_nHiggs)
             self.out.fillBranch("jdown_nHiggs", jdown_nHiggs)
+            self.out.fillBranch("FatJet_genPt", jet_genPt)
 
         self.out.fillBranch("w_higgsSF", w_higgsSF)
         self.out.fillBranch("w_higgsSFUp", w_higgsSFUp)
