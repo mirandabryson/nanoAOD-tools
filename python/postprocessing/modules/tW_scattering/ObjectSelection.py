@@ -170,7 +170,7 @@ class PhysicsObjects(Module):
             t.cleanmask = 1
             for coll in [electrons, muons]:
                 for p in coll:
-                    if self.deltaR(t, p) > 0.4:
+                    if self.deltaR(t, p) < 0.4:
                         t.cleanmask = 0
             isVetoTau.append(1 if (self.isVetoTau(t) and t.cleanmask) else 0)
 
@@ -179,10 +179,12 @@ class PhysicsObjects(Module):
         isVetoTrack  = []
  
         for t in isotracks:
+            t.cleanmask = 1
             for coll in [electrons, muons]:
                 for p in coll:
                     if self.deltaR(t, p) > 0.4:
-                        isVetoTrack.append(self.isVetoTrack(t))
+                        t.cleanmask = 0
+            isVetoTrack.append(1 if (self.isVetoTrack(t)and t.cleanmask) else 0)
 
 
 
