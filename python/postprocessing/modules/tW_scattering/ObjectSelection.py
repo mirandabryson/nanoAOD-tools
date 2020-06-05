@@ -57,7 +57,7 @@ class PhysicsObjects(Module):
 
         #MIRANDA'S ADD-ONS
         self.out.branch("Tau_isVeto",       "F", lenVar="nTau")
-        self.out.branch("Track_isVeto",     "F", lenVar="nIsoTrack")
+        self.out.branch("IsoTrack_isVeto",     "F", lenVar="nIsoTrack")
 
 
         # Counter for good b-tags
@@ -113,7 +113,7 @@ class PhysicsObjects(Module):
     def isVetoTau(self, tau):
         return(tau.pt > 20 and abs(tau.eta) < 2.3 and tau.idDecayMode and tau.idMVAoldDM2017v1 == 8)
     
-    def isVetoTrack(self, isotrack):
+    def isVetoIsoTrack(self, isotrack):
         return(isotrack.pt > 10 and abs(isotrack.eta) < 2.4 and (isotrack.miniPFRelIso_all < (0.1*isotrack.pt) or isotrack.miniPFRelIso_all < 6))
 
     def invMass(self, o1, o2):
@@ -176,7 +176,7 @@ class PhysicsObjects(Module):
 
         #TRACK TIME
             
-        isVetoTrack  = []
+        isVetoIsoTrack  = []
  
         for t in isotracks:
             t.cleanmask = 1
@@ -184,7 +184,7 @@ class PhysicsObjects(Module):
                 for p in coll:
                     if self.deltaR(t, p) > 0.4:
                         t.cleanmask = 0
-            isVetoTrack.append(1 if (self.isVetoTrack(t)and t.cleanmask) else 0)
+            isVetoIsoTrack.append(1 if (self.isVetoIsoTrack(t)and t.cleanmask) else 0)
 
 
 
@@ -255,7 +255,7 @@ class PhysicsObjects(Module):
         self.out.fillBranch("nGoodJet",         sum(isGoodJet))
 
         self.out.fillBranch("Tau_isVeto",       isVetoTau)
-        self.out.fillBranch("Track_isVeto",     isVetoTrack)
+        self.out.fillBranch("IsoTrack_isVeto",     isVetoIsoTrack)
 
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)
