@@ -5,6 +5,8 @@ keep FatJet*
 keep GenJet*
 keep Electron*
 keep Muon*
+keep Tau*
+keep IsoTrack*
 keep MET*
 keep Lepton*
 keep event

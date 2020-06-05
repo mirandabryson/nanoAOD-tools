@@ -55,11 +55,18 @@ class PhysicsObjects(Module):
         self.out.branch("Jet_isGoodBJet",   "I", lenVar="nJet")
         self.out.branch("Jet_leptonClean",  "I", lenVar="nJet")
 
+        #MIRANDA'S ADD-ONS
+        self.out.branch("Tau_isVeto",       "F", lenVar="nTau")
+        self.out.branch("Track_isVeto",     "F", lenVar="nIsoTrack")
+
 
         # Counter for good b-tags
         self.out.branch("nLepton",      "I")
         self.out.branch("nGoodJet",     "I")
         self.out.branch("nGoodBTag",    "I")
+
+
+
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -101,6 +108,14 @@ class PhysicsObjects(Module):
     def deltaR(self, l1, l2):
         return math.sqrt(self.deltaR2(l1,l2))
 
+    #MIRANDA'S ADD ONS
+
+    def isVetoTau(self, tau):
+        return(tau.pt > 20 and abs(tau.eta) < 2.3 and tau.idDecayMode and tau.idMVAoldDM2017v1 == 8)
+    
+    def isVetoTrack(self, isotrack):
+        return(isotrack.pt > 10 and abs(isotrack.eta) < 2.4 and (isotrack.miniPFRelIso_all < (0.1*isotrack.pt) or isotrack.miniPFRelIso_all < 6))
+
     def invMass(self, o1, o2):
         v1 = ROOT.TLorentzVector()
         v2 = ROOT.TLorentzVector()
@@ -112,11 +127,15 @@ class PhysicsObjects(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
+        taus        = Collection(event, "Tau")
         jets        = Collection(event, "Jet")
+        isotracks   = Collection(event, "IsoTrack")
 
         # MET
         met_pt  = event.MET_pt
         met_phi = event.MET_phi
+
+        #create collection for taus, get quality cuts, similar to jets, if its already a lepton, not a veto tau anymore
 
         # tight lepton collection, will be sorted by pt
         leptons     = []
@@ -142,8 +161,30 @@ class PhysicsObjects(Module):
             if self.isTightElectron(el):
                 leptons.append({'pt':el.pt, 'eta':el.eta, 'phi':el.phi, 'pdgId':el.pdgId, 'miniIso':el.miniPFRelIso_all, 'muIndex':-1, 'elIndex':i})
 
-        leptons = sorted(leptons, key = lambda i: i['pt'], reverse=True)
+
+        #TAU TIME
+        isVetoTau   = []
         
+
+        for t in taus:
+            t.cleanmask = 1
+            for coll in [electrons, muons]:
+                for p in coll:
+                    if self.deltaR(t, p) > 0.4:
+                        t.cleanmask = 0
+            isVetoTau.append(1 if (self.isVetoTau(t) and t.cleanmask) else 0)
+
+        #TRACK TIME
+            
+        isVetoTrack  = []
+ 
+        for t in isotracks:
+            for coll in [electrons, muons]:
+                for p in coll:
+                    if self.deltaR(t, p) > 0.4:
+                        isVetoTrack.append(self.isVetoTrack(t))
+
+
 
         cleanMaskV  = []
         isGoodJet   = []
@@ -210,6 +251,9 @@ class PhysicsObjects(Module):
         self.out.fillBranch("Jet_isGoodBJet",   isGoodBJet)
         self.out.fillBranch("nGoodBTag",        sum(isGoodBJet))
         self.out.fillBranch("nGoodJet",         sum(isGoodJet))
+
+        self.out.fillBranch("Tau_isVeto",       isVetoTau)
+        self.out.fillBranch("Track_isVeto",     isVetoTrack)
 
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)

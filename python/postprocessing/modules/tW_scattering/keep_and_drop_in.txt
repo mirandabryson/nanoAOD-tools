@@ -6,6 +6,8 @@ keep GenPart*
 keep FatJet*
 keep Electron*
 keep Muon*
+keep Tau*
+keep IsoTrack*
 keep MET*
 keep event
 keep run
