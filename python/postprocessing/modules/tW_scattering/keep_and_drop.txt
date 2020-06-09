@@ -6,7 +6,9 @@ keep GenJet*
 keep Electron*
 keep Muon*
 keep Tau*
+keep nVetoTau
 keep IsoTrack*
+keep nVetoIsoTrack
 keep MET*
 keep Lepton*
 keep event

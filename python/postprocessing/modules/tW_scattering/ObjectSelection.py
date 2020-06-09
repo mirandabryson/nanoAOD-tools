@@ -57,8 +57,9 @@ class PhysicsObjects(Module):
 
         #MIRANDA'S ADD-ONS
         self.out.branch("Tau_isVeto",       "F", lenVar="nTau")
-        self.out.branch("IsoTrack_isVeto",     "F", lenVar="nIsoTrack")
-
+        self.out.branch("nVetoTau",         "I")
+        self.out.branch("IsoTrack_isVeto",  "F", lenVar="nIsoTrack")
+        self.out.branch("nVetoIsoTrack",    "I")
 
         # Counter for good b-tags
         self.out.branch("nLepton",      "I")
@@ -130,6 +131,7 @@ class PhysicsObjects(Module):
         taus        = Collection(event, "Tau")
         jets        = Collection(event, "Jet")
         isotracks   = Collection(event, "IsoTrack")
+        fatjets     = Collection(event, "FatJet")
 
         # MET
         met_pt  = event.MET_pt
@@ -255,7 +257,9 @@ class PhysicsObjects(Module):
         self.out.fillBranch("nGoodJet",         sum(isGoodJet))
 
         self.out.fillBranch("Tau_isVeto",       isVetoTau)
+        self.out.fillBranch("nVetoTau",         sum(isVetoTau))
         self.out.fillBranch("IsoTrack_isVeto",     isVetoIsoTrack)
+        self.out.fillBranch("nVetoIsoTrack",           sum(isVetoIsoTrack))
 
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)
