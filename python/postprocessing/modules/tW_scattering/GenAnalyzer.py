@@ -70,6 +70,17 @@ class GenAnalyzer(Module):
         self.out.branch("W_pdgId", "I",    lenVar="nW")
         self.out.branch("W_fromTop", "I",    lenVar="nW")
 
+        self.out.branch("H_pt", "F",         lenVar="nH")
+        self.out.branch("H_eta", "F",        lenVar="nH")
+        self.out.branch("H_phi", "F",        lenVar="nH")
+        self.out.branch("H_pdgId", "I",    lenVar="nH")
+
+        self.out.branch("b_pt", "F",         lenVar="nb")
+        self.out.branch("b_eta", "F",        lenVar="nb")
+        self.out.branch("b_phi", "F",        lenVar="nb")
+        self.out.branch("b_pdgId", "I",    lenVar="nb")
+        self.out.branch("b_fromH", "I",    lenVar="nb")
+
         self.out.branch("Top_pt", "F",         lenVar="nTop")
         self.out.branch("Top_eta", "F",        lenVar="nTop")
         self.out.branch("Top_phi", "F",        lenVar="nTop")
@@ -118,6 +129,10 @@ class GenAnalyzer(Module):
 
         Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
 
+        Hs = [ p for p in GenParts if (abs(p.pdgId)==25 and hasBit(p.statusFlags,13) )] # last copy Hs
+
+        bs = [ p for p in GenParts if (abs(p.pdgId) == 5)]# and hasBit(p.statusFlags, 13) )]  last copy bs
+
         leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
 
         scatter = [ p for p in GenParts if (p.genPartIdxMother==0 or p.genPartIdxMother==1) ] # get the intial particles from 2->N scattering
@@ -127,14 +142,20 @@ class GenAnalyzer(Module):
 
         for W in Ws:
             #fromTop = self.hasAncestor(W, 6, GenParts)
-            W.fromTop = ( 1 if self.hasAncestor(W, 6, GenParts) else 0 )
+          W.fromTop = ( 1 if self.hasAncestor(W, 6, GenParts) else 0 )
 
+        for b in bs:
+          b.fromH = ( 1 if self.hasAncestor(b, 25, GenParts) else 0 )
+          print '%s %d %d' %(b,b.fromH, b.genPartIdxMother) 
+            
         for lep in leptons:
             lep.fromTop = ( 1 if self.hasAncestor(lep, 6, GenParts) else 0 )
             lep.fromTau = ( 1 if self.hasAncestor(lep, 15, GenParts) else 0 )
             lep.fromZ = ( 1 if self.hasAncestor(lep, 23, GenParts) else 0 )
             lep.fromW = ( 1 if self.hasAncestor(lep, 24, GenParts) else 0 )
 
+
+        print("end of event")
         #print len(tops), len(Ws), len(scatter), len(spectator), len(leptons)
 
         ## spectator for our signal results in forward jet :)
@@ -183,12 +204,28 @@ class GenAnalyzer(Module):
             self.out.fillBranch("W_pdgId",     [ p.pdgId for p in Ws ])
             self.out.fillBranch("W_fromTop",   [ p.fromTop for p in Ws ])
 
+        self.out.fillBranch("nH",          len(Hs) )
+        if len(Hs)>0:
+            self.out.fillBranch("H_pt",        [ p.pt    for p in Hs ])
+            self.out.fillBranch("H_eta",       [ p.eta   for p in Hs ])
+            self.out.fillBranch("H_phi",       [ p.phi   for p in Hs ])
+            self.out.fillBranch("H_pdgId",     [ p.pdgId for p in Hs ])
+
+        self.out.fillBranch("nb",          len(bs) )
+        if len(bs)>0:
+            self.out.fillBranch("b_pt",        [ p.pt    for p in bs ])
+            self.out.fillBranch("b_eta",       [ p.eta   for p in bs ])
+            self.out.fillBranch("b_phi",       [ p.phi   for p in bs ])
+            self.out.fillBranch("b_pdgId",     [ p.pdgId for p in bs ])
+            self.out.fillBranch("b_fromH",     [ p.fromH for p in bs ])
+
         self.out.fillBranch("nTop",          len(tops) )
         if len(tops)>0:
             self.out.fillBranch("Top_pt",        [ p.pt    for p in tops ])
             self.out.fillBranch("Top_eta",       [ p.eta   for p in tops ])
             self.out.fillBranch("Top_phi",       [ p.phi   for p in tops ])
             self.out.fillBranch("Top_pdgId",     [ p.pdgId for p in tops ])
+
 
         return True
 
