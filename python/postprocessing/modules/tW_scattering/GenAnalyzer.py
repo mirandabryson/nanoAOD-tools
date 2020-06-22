@@ -4,11 +4,13 @@ import numpy as np
 import pandas as pd
 import math
 import glob
-import itertools
+import itertools 
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
+from PhysicsTools.NanoAODTools.postprocessing.framework.mt2Calculator import mt2Calculator
+
 
 def hasBit(value,bit):
   """Check if i'th bit is set to 1, i.e. binary of 2^(i-1),
@@ -81,16 +83,31 @@ class GenAnalyzer(Module):
         self.out.branch("b_pdgId", "I",    lenVar="nb")
         self.out.branch("b_fromH", "I",    lenVar="nb")
 
+        self.out.branch("j_pt", "F",         lenVar="nj")
+        self.out.branch("j_eta", "F",        lenVar="nj")
+        self.out.branch("j_phi", "F",        lenVar="nj")
+        self.out.branch("j_pdgId", "I",    lenVar="nj")
+        self.out.branch("j_fromW", "I",    lenVar="nj")
+
         self.out.branch("Top_pt", "F",         lenVar="nTop")
         self.out.branch("Top_eta", "F",        lenVar="nTop")
         self.out.branch("Top_phi", "F",        lenVar="nTop")
         self.out.branch("Top_pdgId", "I",        lenVar="nTop")
 
         # Counter for good b-tags
-        self.out.branch("nLepFromTop",     "I")
-        self.out.branch("nLepFromTau",    "I")
-        self.out.branch("nLepFromW",    "I")
-        self.out.branch("nLepFromZ",    "I")
+        self.out.branch("nLepFromTop",      "I")
+        self.out.branch("nLepFromTau",      "I")
+        self.out.branch("nLepFromW",        "I")
+        self.out.branch("nLepFromZ",        "I")
+
+        #miranda time
+        self.out.branch("DeltaRbb", "F",   lenVar="nH")
+        self.out.branch("MCT", "F",        lenVar="nH")
+        self.out.branch("MT2_WH", "F",     lenVar="nH")
+        self.out.branch("MT2_bbjj", "F",     lenVar="nH")
+        self.out.branch("MT2_bjj_b", "F",     lenVar="nH")
+        self.out.branch("Mbb", "F",         lenVar="nH")
+
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -115,11 +132,30 @@ class GenAnalyzer(Module):
             if (abs(genParts[motherIdx].pdgId) == ancestorPdg): return True
             motherIdx = genParts[motherIdx].genPartIdxMother
         return False
-        
+    
+    def MCT2(self, b1, b2):
+      return 2*b1.pt*b2.pt*(1+math.cos(self.deltaPhi(b1.phi,b2.phi)))
+
+    def MCT(self, b1, b2):
+      return math.sqrt(self.MCT2(b1,b2))
+
+    def Mbb(self, b1, b2):
+      bjet1 = ROOT.TLorentzVector()
+      bjet1.SetPtEtaPhiM(b1.pt, b1.eta, b1.phi, 0)
+      bjet2 = ROOT.TLorentzVector()
+      bjet2.SetPtEtaPhiM(b2.pt, b2.eta, b2.phi, 0)
+      return (bjet1 + bjet2).M()
 
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
+#        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
+
+        #MET
+        met_pt  = event.MET_pt
+        met_phi = event.MET_phi
+        
+        #Particles
         spectator = []
 
         GenParts    = Collection(event, "GenPart")
@@ -129,9 +165,11 @@ class GenAnalyzer(Module):
 
         Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
 
+        js = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 5 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
+
         Hs = [ p for p in GenParts if (abs(p.pdgId)==25 and hasBit(p.statusFlags,13) )] # last copy Hs
 
-        bs = [ p for p in GenParts if (abs(p.pdgId) == 5)]# and hasBit(p.statusFlags, 13) )]  last copy bs
+        bs = [ p for p in GenParts if (abs(p.pdgId) == 5 and hasBit(p.statusFlags, 7))]  #hard scatter bs
 
         leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
 
@@ -144,10 +182,29 @@ class GenAnalyzer(Module):
             #fromTop = self.hasAncestor(W, 6, GenParts)
           W.fromTop = ( 1 if self.hasAncestor(W, 6, GenParts) else 0 )
 
+        for j in js:
+          j.fromW = (1 if self.hasAncestor(j, 24, GenParts) else 0 )
+
         for b in bs:
           b.fromH = ( 1 if self.hasAncestor(b, 25, GenParts) else 0 )
-          print '%s %d %d' %(b,b.fromH, b.genPartIdxMother) 
-            
+
+
+
+        deltaRbb = []
+        Mct = []
+        mbb = []
+
+        for b,s in itertools.combinations(bs, 2):
+          if (b.fromH == 1 and s.fromH == 1):
+            dr = self.deltaR(b, s)
+            mct = self.MCT(b,s)
+            Mbb = self.Mbb(b,s)
+          else:
+            continue
+          deltaRbb.append(dr)
+          Mct.append(mct)
+          mbb.append(Mbb)
+
         for lep in leptons:
             lep.fromTop = ( 1 if self.hasAncestor(lep, 6, GenParts) else 0 )
             lep.fromTau = ( 1 if self.hasAncestor(lep, 15, GenParts) else 0 )
@@ -155,7 +212,37 @@ class GenAnalyzer(Module):
             lep.fromW = ( 1 if self.hasAncestor(lep, 24, GenParts) else 0 )
 
 
-        print("end of event")
+
+        #MT2WH
+            
+        mt2WH = []
+
+        mt2Calculator.setMet(met_pt, met_phi)
+        
+        for H in Hs:
+          mt2Calculator.setJet1(H.pt, H.eta, H.phi)
+        for W in Ws:
+          mt2Calculator.setJet2(W.pt, W.eta, W.phi)
+        mt2WH.append(mt2Calculator.mt2jj())
+        
+        #MT2bbjj
+
+        mt2bbjj =[]
+        mt2bjjb = []
+
+        for b,s in itertools.combinations(bs, 2):
+          if (b.fromH == 1 and s.fromH == 1):
+            mt2Calculator.setBJet1(b.pt, b.eta, b.phi)
+            mt2Calculator.setBJet2(s.pt, s.eta, s.phi)
+        for j,s in itertools.combinations(js, 2):
+          if (j.fromW == 1 and s.fromW == 1):
+            mt2Calculator.setJet1(j.pt, j.eta, j.phi)
+            mt2Calculator.setJet2(s.pt, s.eta, s.phi)
+        mt2bbjj.append(mt2Calculator.mt2bbjj())
+        mt2bjjb.append(mt2Calculator.mt2bjjb())
+
+        
+
         #print len(tops), len(Ws), len(scatter), len(spectator), len(leptons)
 
         ## spectator for our signal results in forward jet :)
@@ -169,6 +256,13 @@ class GenAnalyzer(Module):
         self.out.fillBranch("nLepFromTau", sum( [ l.fromTau for l in leptons ] ) )
         self.out.fillBranch("nLepFromW",   sum( [ l.fromW for l in leptons ] ) )
         self.out.fillBranch("nLepFromZ",   sum( [ l.fromZ for l in leptons ] ) )
+
+        self.out.fillBranch("DeltaRbb",     deltaRbb)
+        self.out.fillBranch("MCT",          Mct)
+        self.out.fillBranch("MT2_WH",       mt2WH)
+        self.out.fillBranch("MT2_bbjj",       mt2bbjj)
+        self.out.fillBranch("MT2_bjj_b",       mt2bjjb)
+        self.out.fillBranch("Mbb",           mbb)
 
         self.out.fillBranch("nGenL",          len(leptons) )
         if len(leptons)>0:
@@ -218,6 +312,14 @@ class GenAnalyzer(Module):
             self.out.fillBranch("b_phi",       [ p.phi   for p in bs ])
             self.out.fillBranch("b_pdgId",     [ p.pdgId for p in bs ])
             self.out.fillBranch("b_fromH",     [ p.fromH for p in bs ])
+
+        self.out.fillBranch("nj",          len(js) )
+        if len(js)>0:
+            self.out.fillBranch("j_pt",        [ p.pt    for p in js ])
+            self.out.fillBranch("j_eta",       [ p.eta   for p in js ])
+            self.out.fillBranch("j_phi",       [ p.phi   for p in js ])
+            self.out.fillBranch("j_pdgId",     [ p.pdgId for p in js ])
+            self.out.fillBranch("j_fromW",     [ p.fromW for p in js ])
 
         self.out.fillBranch("nTop",          len(tops) )
         if len(tops)>0:
