@@ -25,5 +25,10 @@ keep nLepFromZ
 keep GenL*
 keep W*
 keep Top*
-keep Spectator*
-keep Scatter*
+keep H*
+keep b*
+keep j*
+keep DeltaRbb
+keep MCT
+keep MT2*
+keep Mbb
