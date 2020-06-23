@@ -114,10 +114,13 @@ class MT2Calculator:
         if strategy=="minMaxMass":
             max1 = max([(self.bjet1 + self.bjet2).M(), (self.jet1 + self.jet2).M()])
             max2 = max([(self.jet1 + self.bjet2).M(), (self.jet2 + self.bjet1).M()])
-            if max1<max2: #Choose pairing with smaller invariant mass
+            max3 = max([(self.bjet1 + self.jet1).M(), (self.bjet2 + self.jet2).M()])
+            if (max1<max2 and max1<max3): #Choose pairing with smallest invariant mass
                 b1b2,j1j2 = self.bjet1+self.bjet2, self.jet2+self.bjet2
-            else:
+            elif (max2<max1 and max2<max3):
                 b1b2,j1j2 = self.jet1+self.bjet2, self.jet2+self.bjet1
+            elif (max3<max1 and max3<max2):
+                b1b2,j1j2 = self.bjet1+self.jet1, self.bjet2+self.jet2
         else:
             assert False, "only minMaxMass implemented"
 
