@@ -29,8 +29,8 @@ class PhysicsObjects(Module):
 
         ## Define a first minimum set of objects needed for the analysis
         #FIXME objects should have cross-reference to full collection
+        
 
-        # New collection of Muons
         self.out.branch("Lepton_pt", "F", lenVar="nLepton")
         self.out.branch("Lepton_eta", "F", lenVar="nLepton")
         self.out.branch("Lepton_phi", "F", lenVar="nLepton")
@@ -39,17 +39,11 @@ class PhysicsObjects(Module):
         self.out.branch("Lepton_muIndex", "I", lenVar="nLepton")
         self.out.branch("Lepton_elIndex", "I", lenVar="nLepton")
 
-        ## New collection of Jets. #FIXME overlap removal with GoodLeptons
-        #self.out.branch("GoodJet_pt", "F", lenVar="nGoodJet")
-        #self.out.branch("GoodJet_eta", "F", lenVar="nGoodJet")
-        #self.out.branch("GoodJet_phi", "F", lenVar="nGoodJet")
-        #self.out.branch("GoodJet_btag", "F", lenVar="nGoodJet")
-
-        ##
         self.out.branch("Muon_isVeto",      "I", lenVar="nMuon")
         self.out.branch("Muon_isTight",     "I", lenVar="nMuon")
         self.out.branch("Electron_isVeto",  "I", lenVar="nElectron")
         self.out.branch("Electron_isTight", "I", lenVar="nElectron")
+        
         self.out.branch("Jet_isGoodJet",    "I", lenVar="nJet")
         self.out.branch("Jet_isGoodJetAll", "I", lenVar="nJet")
         self.out.branch("Jet_isGoodBJet",   "I", lenVar="nJet")
