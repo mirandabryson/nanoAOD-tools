@@ -20,6 +20,8 @@ class MT2Calculator:
         self.met=None
         self.lepton1=None
         self.lepton2=None
+        self.jet1=None
+        self.jet2=None
         self.bjet1=None
         self.bjet2=None
 

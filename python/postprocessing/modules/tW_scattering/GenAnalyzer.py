@@ -65,7 +65,7 @@ class GenAnalyzer(Module):
         self.out.branch("Genj_pt", "F",         lenVar="ngenj")
         self.out.branch("Genj_eta", "F",        lenVar="ngenj")
         self.out.branch("Genj_phi", "F",        lenVar="ngenj")
-        self.out.branch("Genj_pdgId", "I",    lenVar="ngenj")
+        self.out.branch("Genj_pdgId", "I",    lenVar="ngen")
         self.out.branch("Genj_fromW", "I",    lenVar="ngenj")
         
         #miranda time
@@ -74,20 +74,18 @@ class GenAnalyzer(Module):
         self.out.branch("GenMbb", "F",         lenVar="ngenbb")
 
         self.out.branch("GenDeltaRjj", "F",   lenVar="ngenjj")
-
            
 
         self.out.branch("GenMT2_WH", "F",     lenVar="ngenWH")
         self.out.branch("GenMT2_bbjj", "F",     lenVar="ngenmt2")
         self.out.branch("GenMT2_bjjb", "F",     lenVar="ngenmt2")
 
-        self.out.branch("Genleadbjet_pt", "F")
-        self.out.branch("Genleadnonbjet_pt", "F")
+        self.out.branch("Genleadb_pt", "F")
+        self.out.branch("Genleadnonb_pt", "F")
 
-        self.out.branch("Genak8jet_pt", "F",     lenVar="ngenak8jet")
-        self.out.branch("Genak8jet_eta", "F",     lenVar="ngenak8jet")
-        self.out.branch("Genak8jet_phi", "F",     lenVar="ngenak8jet")
-        self.out.branch("Genak8jet_pdgId", "I",     lenVar="ngenak8jet")
+        self.out.branch("Genak8j_pt", "F",     lenVar="ngenak8jet")
+        self.out.branch("Genak8j_eta", "F",     lenVar="ngenak8jet")
+        self.out.branch("Genak8j_phi", "F",     lenVar="ngenak8jet")
 
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -130,7 +128,7 @@ class GenAnalyzer(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
-        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
+#        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
 
         #MET
         met_pt  = event.MET_pt
@@ -139,12 +137,11 @@ class GenAnalyzer(Module):
         #Particles
         GenParts    = Collection(event, "GenPart")
         GenAK8Jets  = Collection(event, "GenJetAK8")
+        GenJets     = Collection(event, "GenJet")
 
         Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
 
         js = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 5 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
-
-#        ak8js = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 5 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
 
         nonbjs = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
 
@@ -200,7 +197,6 @@ class GenAnalyzer(Module):
             continue
           deltaRjj.append(dr)
 
-#        print '%d' %(ijj)
 
         #MT2WH
             
@@ -233,6 +229,32 @@ class GenAnalyzer(Module):
               mt2bbjj.append(mt2Calculator.mt2bbjj())
               mt2bjjb.append(mt2Calculator.mt2bjjb())
 
+
+        #NEW MT2
+
+        #create list of jets with no overlap
+        
+        goodjets = []
+
+        for j in GenJets:
+          overlap = False
+          for g in GenAK8Jets:
+            deltar = self.deltaR(j, g)
+            if (deltar < 0.4):
+              overlap = True
+              break
+          if overlap:
+            continue
+          goodjets.append(j)
+
+        for g in GenAK8Jets:
+          goodjets.append(g)
+
+        #sort list of jets by highest pt
+        goodjets.sort(reverse = True, key = lambda x : x.pt)
+
+
+        #--------------------------------------FILL---BRANCHES-----------------------------------------#
         
         #some jet stuff
 
@@ -246,8 +268,8 @@ class GenAnalyzer(Module):
         if ijj > 0:
           self.out.fillBranch("GenDeltaRjj",     deltaRjj)
 
-        self.out.fillBranch("Genleadbjet_pt",    max(leadbj_pt))
-        self.out.fillBranch("Genleadnonbjet_pt", max(leadnonbj_pt))
+        self.out.fillBranch("Genleadb_pt",    max(leadbj_pt))
+        self.out.fillBranch("Genleadnonb_pt", max(leadnonbj_pt))
 
 
         #MT2
@@ -293,10 +315,9 @@ class GenAnalyzer(Module):
 
         self.out.fillBranch("ngenak8jet",        len(GenAK8Jets) )
         if len(GenAK8Jets) > 0:
-            self.out.fillBranch("Genak8jet_pt",       [j.pt   for j in GenAK8Jets])
-            self.out.fillBranch("Genak8j_eta",        [j.pt   for j in GenAK8Jets])
-            self.out.fillBranch("Genak8j_phi",        [j.pt   for j in GenAK8Jets])
-            self.out.fillBranch("Genak8j_pdgId",      [j.pt   for j in GenAK8Jets])
+            self.out.fillBranch("Genak8j_pt",       [j.pt   for j in GenAK8Jets])
+            self.out.fillBranch("Genak8j_eta",        [j.eta   for j in GenAK8Jets])
+            self.out.fillBranch("Genak8j_phi",        [j.phi   for j in GenAK8Jets])
 
 
         return True

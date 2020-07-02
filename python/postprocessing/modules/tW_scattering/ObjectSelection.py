@@ -45,9 +45,13 @@ class PhysicsObjects(Module):
         self.out.branch("Electron_isTight", "I", lenVar="nElectron")
         
         self.out.branch("Jet_isGoodJet",    "I", lenVar="nJet")
-        self.out.branch("Jet_isGoodJetAll", "I", lenVar="nJet")
         self.out.branch("Jet_isGoodBJet",   "I", lenVar="nJet")
         self.out.branch("Jet_leptonClean",  "I", lenVar="nJet")
+
+        self.out.branch("FatJet_isGoodJet", "I", lenVar="nFatJet")
+        self.out.branch("FatJet_fromW", "I", lenVar="nFatJet")
+        self.out.branch("FatJet_fromH", "I", lenVar="nFatJet")
+        self.out.branch("FatJet_leptonClean",  "I", lenVar="nFatJet")
 
         #MIRANDA'S ADD-ONS
         self.out.branch("Tau_isVeto",       "F", lenVar="nTau")
@@ -61,21 +65,59 @@ class PhysicsObjects(Module):
         self.out.branch("nGoodBTag",    "I")
 
 
+        self.out.branch("GoodJet_pt"    ,"F",  lenVar="nGoodJet")
+        self.out.branch("GoodJet_eta"   ,"F",  lenVar="nGoodJet")
+        self.out.branch("GoodJet_phi"   ,"F",  lenVar="nGoodJet")
+
+        self.out.branch("BJet_pt"    ,"F",  lenVar="nBJet")
+        self.out.branch("BJet_eta"   ,"F",  lenVar="nBJet")
+        self.out.branch("BJet_phi"   ,"F",  lenVar="nBJet")
+
+        self.out.branch("GoodFatJet_pt"    ,"F",  lenVar="nGoodFatJet")
+        self.out.branch("GoodFatJet_eta"   ,"F",  lenVar="nGoodFatJet")
+        self.out.branch("GoodFatJet_phi"   ,"F",  lenVar="nGoodFatJet")
+
+        self.out.branch("FatJetfromW_pt"    ,"F",  lenVar="nFatJetfromW")
+        self.out.branch("FatJetfromW_eta"   ,"F",  lenVar="nFatJetfromW")
+        self.out.branch("FatJetfromW_phi"   ,"F",  lenVar="nFatJetfromW")
+
+        self.out.branch("FatJetfromH_pt"    ,"F",  lenVar="nFatJetfromH")
+        self.out.branch("FatJetfromH_eta"   ,"F",  lenVar="nFatJetfromH")
+        self.out.branch("FatJetfromH_phi"   ,"F",  lenVar="nFatJetfromH")
+
+
+
 
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
     def isGoodJet(self, jet):
-        return (jet.pt > 25 and abs(jet.eta)<2.4 and jet.jetId>1)
-
-    def isFwdJet(self, jet):
-        return (((jet.pt > 25 and abs(jet.eta)<2.7) or (jet.pt>60 and abs(jet.eta)>=2.7 and abs(jet.eta)<3.0) or (jet.pt>25 and abs(jet.eta)>=3.0 and abs(jet.eta)<5.0))  and jet.jetId>1)
+        return (jet.pt > 30 and abs(jet.eta)<2.4 and jet.jetId>0)
 
     def isGoodBJet(self, jet):
+        if self.year == 2016:
+            threshold = 0.6321
+        if self.year == 2017:
+            threshold = 0.4941
         if self.year == 2018:
             threshold = 0.4184
         return (self.isGoodJet(jet) and jet.btagDeepB > threshold)
+
+    def isGoodFatJet(self, fatjet):
+        return (fatjet.pt > 200 and fatjet.jetId>0)
+
+    def isFatJetfromW(self, fatjet):
+        return(self.isGoodFatJet(fatjet) and fatjet.deepTagMD_WvsQCD > 0.9)
+
+    def isFatJetfromH(self, fatjet):
+        if self.year == 2016:
+            threshold = 0.8945
+        if self.year == 2017:
+            threshold = 0.8695
+        if self.year == 2018:
+            threshold = 0.8365
+        return(self.isGoodFatJet(fatjet) and fatjet.deepTagMD_HbbvsQCD > threshold)
 
     def isVetoMuon(self, muon):
         return (muon.looseId and muon.pt>5 and abs(muon.eta)<2.4 and muon.miniPFRelIso_all < 0.2 and abs(muon.dxy)<0.1 and abs(muon.dz)<0.5)
@@ -183,15 +225,12 @@ class PhysicsObjects(Module):
             isVetoIsoTrack.append(1 if (self.isVetoIsoTrack(t)and t.cleanmask) else 0)
 
 
+        cleanMaskV   = []
+        isGoodJet    = []
+        isGoodBJet   = []
 
-        cleanMaskV  = []
-        isGoodJet   = []
-        isGoodBJet  = []
-        isGoodJetAll = []
-
-        fwdjets = []
-        jets_out    = []
-        bjets   = []
+        goodjets    = []
+        bjets       = []
 
         for j in jets:
 
@@ -203,7 +242,6 @@ class PhysicsObjects(Module):
                             j.cleanMask = 0
 
             isGoodJet.append(1 if (self.isGoodJet(j) and j.cleanMask) else 0)
-            isGoodJetAll.append(1 if (self.isFwdJet(j) and j.cleanMask) else 0)
             isGoodBJet.append(1 if (self.isGoodBJet(j) and j.cleanMask) else 0)
             
             cleanMaskV.append(j.cleanMask)
@@ -212,48 +250,112 @@ class PhysicsObjects(Module):
             if j.cleanMask:
 
                 if self.isGoodJet(j):
-                    jets_out.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                    goodjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
                     
                     if self.isGoodBJet(j):
                         bjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
                 
-                if self.isFwdJet(j):
-                    fwdjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+
+        cleanMaskW  = []
+        isGoodFatJet   = []
+        isFatJetfromW  = []
+        isFatJetfromH = []
+        
+        goodfatjets = []
+        fatjetsfromW = []
+        fatjetsfromH = []
+        
+        for f in fatjets:
+
+            f.cleanMask = 1
+            for coll in [electrons, muons]:
+                for p in coll:
+                    if p.isVeto:
+                        if self.deltaR(f, p) < 0.4:
+                            f.cleanMask = 0
+
+            isGoodFatJet.append(1 if (self.isGoodFatJet(f) and f.cleanMask) else 0)
+            isFatJetfromW.append(1 if (self.isFatJetfromW(f) and f.cleanMask) else 0)
+            isFatJetfromH.append(1 if (self.isFatJetfromH(f) and f.cleanMask) else 0)
+            
+            cleanMaskW.append(f.cleanMask)
+
+            # Fill the other collections
+            if f.cleanMask:
+
+                if self.isGoodFatJet(f):
+                    goodfatjets.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
+                    
+                    if self.isFatJetfromW(f):
+                        fatjetsfromW.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
+                
+                    if self.isFatJetfromH(f):
+                        fatjetsfromH.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
                        
 
         # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
         bjets       = sorted(bjets, key = lambda i: i['pt'], reverse=True)
-        fwdjets     = sorted(fwdjets, key = lambda i: i['pt'], reverse=True) # all jets, including forward ones
-        jets_out    = sorted(jets_out, key = lambda i: i['pt'], reverse=True)
-
-        # calculate MT, Mlb, Mlb_max, M_jj_b1, M_jj_b2 etc
-        Mlb_00 = -99 # leading lepton, first b-jet
-        Mlb_01 = -99 # leading lepton, second b-jet
-        Mlb_10 = -99 # trailing lepton, first b-jet
-        Mlb_11 = -99 # trailing lepton, second b-jet
-
-        #if len(jets)>0:
-        #    if len(leptons)>0:
-        #        Mlb_00 = 
-        #
-        #if len(leptons)>1
+        goodjets    = sorted(goodjets, key = lambda i: i['pt'], reverse=True)
+        goodfatjets = sorted(goodfatjets, key = lambda i: i['pt'], reverse=True)
+        fatjetsfromW = sorted(fatjetsfromW, key = lambda i: i['pt'], reverse=True)
+        fatjetsfromH = sorted(fatjetsfromH, key = lambda i: i['pt'], reverse=True)
 
 
-        self.out.fillBranch("Muon_isTight",     isTightMuon)
-        self.out.fillBranch("Muon_isVeto",      isVetoMuon)
-        self.out.fillBranch("Electron_isTight", isTightElectron)
-        self.out.fillBranch("Electron_isVeto",  isVetoElectron)
-        self.out.fillBranch("Jet_leptonClean",   cleanMaskV)
-        self.out.fillBranch("Jet_isGoodJet",    isGoodJet)
-        self.out.fillBranch("Jet_isGoodJetAll", isGoodJetAll)
-        self.out.fillBranch("Jet_isGoodBJet",   isGoodBJet)
-        self.out.fillBranch("nGoodBTag",        sum(isGoodBJet))
-        self.out.fillBranch("nGoodJet",         sum(isGoodJet))
 
-        self.out.fillBranch("Tau_isVeto",       isVetoTau)
-        self.out.fillBranch("nVetoTau",         sum(isVetoTau))
-        self.out.fillBranch("IsoTrack_isVeto",     isVetoIsoTrack)
-        self.out.fillBranch("nVetoIsoTrack",           sum(isVetoIsoTrack))
+        self.out.fillBranch("Muon_isTight",         isTightMuon)
+        self.out.fillBranch("Muon_isVeto",          isVetoMuon)
+        self.out.fillBranch("Electron_isTight",     isTightElectron)
+        self.out.fillBranch("Electron_isVeto",      isVetoElectron)
+        self.out.fillBranch("Jet_leptonClean",      cleanMaskV)
+        self.out.fillBranch("Jet_isGoodJet",        isGoodJet)
+        self.out.fillBranch("Jet_isGoodBJet",       isGoodBJet)
+        self.out.fillBranch("FatJet_leptonClean",   cleanMaskW)
+        self.out.fillBranch("FatJet_isGoodJet",     isGoodFatJet)
+        self.out.fillBranch("FatJet_fromW",         isFatJetfromW)
+        self.out.fillBranch("FatJet_fromH",         isFatJetfromH)
+        self.out.fillBranch("nGoodBTag",            sum(isGoodBJet))
+        self.out.fillBranch("nGoodJet",             sum(isGoodJet))
+
+        self.out.fillBranch("Tau_isVeto",           isVetoTau)
+        self.out.fillBranch("nVetoTau",             sum(isVetoTau))
+        self.out.fillBranch("IsoTrack_isVeto",      isVetoIsoTrack)
+        self.out.fillBranch("nVetoIsoTrack",        sum(isVetoIsoTrack))
+
+        goodjets_pd = pd.DataFrame(goodjets)
+        self.out.fillBranch("nGoodJet",          len(goodjets_pd) )
+        if len(goodjets_pd)>0:
+            self.out.fillBranch("GoodJet_pt",        goodjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
+            self.out.fillBranch("GoodJet_eta",       goodjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("GoodJet_phi",       goodjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+        
+        bjets_pd = pd.DataFrame(bjets)
+        self.out.fillBranch("nBJet",          len(bjets_pd) )
+        if len(bjets_pd)>0:
+            self.out.fillBranch("BJet_pt",        bjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
+            self.out.fillBranch("BJet_eta",       bjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("BJet_phi",       bjets_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
+
+        goodfatjets_pd = pd.DataFrame(goodfatjets)
+        self.out.fillBranch("nGoodFatJet",          len(goodfatjets_pd) )
+        if len(goodfatjets_pd)>0:
+            self.out.fillBranch("GoodFatJet_pt",        goodfatjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
+            self.out.fillBranch("GoodFatJet_eta",       goodfatjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist())
+            self.out.fillBranch("GoodFatJet_phi",       goodfatjets_pd.sort_values(by='pt', ascending=False)['phi'].tolist())
+
+        fatjetsfromW_pd = pd.DataFrame(fatjetsfromW)
+        self.out.fillBranch("nFatJetfromW",          len(fatjetsfromW_pd) )
+        if len(fatjetsfromW_pd)>0:
+            self.out.fillBranch("FatJetfromW_pt",       fatjetsfromW_pd.sort_values(by='pt', ascending=False)['pt'].tolist())
+            self.out.fillBranch("FatJetfromW_eta",      fatjetsfromW_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("FatJetfromW_phi",      fatjetsfromW_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
+
+        fatjetsfromH_pd = pd.DataFrame(fatjetsfromH)
+        self.out.fillBranch("nFatJetfromH",          len(fatjetsfromH_pd) )
+        if len(fatjetsfromH_pd)>0:
+            self.out.fillBranch("FatJetfromH_pt",       fatjetsfromH_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
+            self.out.fillBranch("FatJetfromH_eta",      fatjetsfromH_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("FatJetfromH_phi",      fatjetsfromH_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
+
 
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)
@@ -273,3 +375,5 @@ class PhysicsObjects(Module):
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
 selector2018 = lambda : PhysicsObjects( year=2018 )
+
+selector2016 = lambda : PhysicsObjects( year=2016 )
