@@ -374,6 +374,7 @@ class PhysicsObjects(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
+selector2016 = lambda : PhysicsObjects( year=2016 )
+selector2017 = lambda : PhysicsObjects( year=2017 )
 selector2018 = lambda : PhysicsObjects( year=2018 )
 
-selector2016 = lambda : PhysicsObjects( year=2016 )
