@@ -156,16 +156,16 @@ class GenAnalyzer(Module):
           j.fromW = (1 if self.hasAncestor(j, 24, GenParts) else 0 )
 
         leadbj_pt = []
- 
+
         for b in bs:
           b.fromH = ( 1 if self.hasAncestor(b, 25, GenParts) else 0 )
           leadbj_pt.append(b.pt)
-          
 
         leadnonbj_pt = []
 
         for n in nonbjs:
           leadnonbj_pt.append(n.pt)
+          
 
         deltaRbb = []
         deltaRjj = []
@@ -268,14 +268,17 @@ class GenAnalyzer(Module):
         if ijj > 0:
           self.out.fillBranch("GenDeltaRjj",     deltaRjj)
 
-        self.out.fillBranch("Genleadb_pt",    max(leadbj_pt))
-        self.out.fillBranch("Genleadnonb_pt", max(leadnonbj_pt))
+
+        if len(leadbj_pt)>0:
+          self.out.fillBranch("Genleadb_pt",    max(leadbj_pt))
+        if len(leadnonbj_pt)>0:
+          self.out.fillBranch("Genleadnonb_pt", max(leadnonbj_pt))
 
 
         #MT2
-        self.out.fillBranch("ngenWH",          len(Hs)*len(Ws) )
-        if (len(Hs)*len(Ws) >0):
-          self.out.fillBranch("GenMT2_WH",       mt2WH)
+#        self.out.fillBranch("ngenWH",          len(Hs)*len(Ws) )
+#        if (len(Hs)*len(Ws) >0):
+#          self.out.fillBranch("GenMT2_WH",       mt2WH)
 
 #        self.out.fillBranch("ngenmt2",          imt2)
 #        if imt2 > 0:
