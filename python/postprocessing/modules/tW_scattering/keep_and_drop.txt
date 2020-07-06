@@ -24,5 +24,4 @@ keep Genb*
 keep Genj*
 keep GenDeltaR*
 keep GenMCT
-keep GenMT2*
 keep GenMbb
