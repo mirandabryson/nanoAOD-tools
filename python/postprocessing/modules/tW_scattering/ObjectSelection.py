@@ -69,6 +69,7 @@ class PhysicsObjects(Module):
         self.out.branch("GoodJet_eta"   ,"F",  lenVar="nGoodJet")
         self.out.branch("GoodJet_phi"   ,"F",  lenVar="nGoodJet")
 
+
         self.out.branch("BJet_pt"    ,"F",  lenVar="nBJet")
         self.out.branch("BJet_eta"   ,"F",  lenVar="nBJet")
         self.out.branch("BJet_phi"   ,"F",  lenVar="nBJet")
@@ -85,6 +86,8 @@ class PhysicsObjects(Module):
         self.out.branch("FatJetfromH_eta"   ,"F",  lenVar="nFatJetfromH")
         self.out.branch("FatJetfromH_phi"   ,"F",  lenVar="nFatJetfromH")
 
+        self.out.branch("Mbb"               ,"F",  lenVar="nbb")
+        self.out.branch("MCT"               ,"F",  lenVar="nbb")
 
 
 
@@ -160,8 +163,24 @@ class PhysicsObjects(Module):
         v2.SetPtEtaPhi(o2['pt'], o2['eta'], o2['phi'], 0)
         return (v1+v2).M()
 
+    def MCT2(self, b1, b2):
+      return 2*b1.pt*b2.pt*(1+math.cos(self.deltaPhi(b1.phi,b2.phi)))
+
+    def MCT(self, b1, b2):
+      return math.sqrt(self.MCT2(b1,b2))
+
+    def Mbb(self, b1, b2):
+      bjet1 = ROOT.TLorentzVector()
+      bjet1.SetPtEtaPhiM(b1.pt, b1.eta, b1.phi, 0)
+      bjet2 = ROOT.TLorentzVector()
+      bjet2.SetPtEtaPhiM(b2.pt, b2.eta, b2.phi, 0)
+      return (bjet1 + bjet2).M()
+
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
+
+#        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
+
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
         taus        = Collection(event, "Tau")
@@ -254,7 +273,21 @@ class PhysicsObjects(Module):
                     
                     if self.isGoodBJet(j):
                         bjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
-                
+
+        Mct = []
+        mbb = []
+            
+        ibb = 0
+        if isGoodBJet == 1:
+            if len(jets) > 1:
+                for b,j in itertools.combinations(jets, 2):
+                    ibb += 1
+                    mct = self.MCT(b,j)
+                    Mbb = self.Mbb(b,j)
+                    Mct.append(mct)
+                    mbb.append(Mbb)
+
+        
 
         cleanMaskW  = []
         isGoodFatJet   = []
@@ -321,12 +354,18 @@ class PhysicsObjects(Module):
         self.out.fillBranch("IsoTrack_isVeto",      isVetoIsoTrack)
         self.out.fillBranch("nVetoIsoTrack",        sum(isVetoIsoTrack))
 
+        self.out.fillBranch("nbb",          ibb)
+        if ibb > 0:
+          self.out.fillBranch("MCT",          Mct)
+          self.out.fillBranch("Mbb",           mbb)
+
         goodjets_pd = pd.DataFrame(goodjets)
         self.out.fillBranch("nGoodJet",          len(goodjets_pd) )
         if len(goodjets_pd)>0:
             self.out.fillBranch("GoodJet_pt",        goodjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
             self.out.fillBranch("GoodJet_eta",       goodjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
-            self.out.fillBranch("GoodJet_phi",       goodjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("GoodJet_phi",       goodjets_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
+            
         
         bjets_pd = pd.DataFrame(bjets)
         self.out.fillBranch("nBJet",          len(bjets_pd) )

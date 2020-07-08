@@ -9,7 +9,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
-#from PhysicsTools.NanoAODTools.postprocessing.framework.mt2Calculator import mt2Calculator
+from PhysicsTools.NanoAODTools.postprocessing.framework.mt2Calculator import mt2Calculator
 
 
 def hasBit(value,bit):
@@ -76,9 +76,9 @@ class GenAnalyzer(Module):
         self.out.branch("GenDeltaRjj", "F",   lenVar="ngenjj")
            
 
-#        self.out.branch("GenMT2_WH", "F",     lenVar="ngenWH")
-#        self.out.branch("GenMT2_bbjj", "F",     lenVar="ngenmt2")
-#        self.out.branch("GenMT2_bjjb", "F",     lenVar="ngenmt2")
+        self.out.branch("GenMT2_WH", "F",     lenVar="ngenWH")
+        self.out.branch("GenMT2_bbjj", "F",     lenVar="ngenmt2")
+        self.out.branch("GenMT2_bjjb", "F",     lenVar="ngenmt2")
 
         self.out.branch("Genleadb_pt", "F")
         self.out.branch("Genleadnonb_pt", "F")
@@ -200,34 +200,35 @@ class GenAnalyzer(Module):
 
         #MT2WH
             
-#        mt2WH = []
+        mt2WH = []
 
-#        mt2Calculator.setMet(met_pt, met_phi)
+        mt2Calculator.setMet(met_pt, met_phi)
 
-#        if (len(Ws) > 0) and (len(Hs) > 0):
-#          for H in Hs:
-#            for W in Ws:
-#              mt2Calculator.setJet1(H.pt, H.eta, H.phi)
-#              mt2Calculator.setJet2(W.pt, W.eta, W.phi)
-#              mt2WH.append(mt2Calculator.mt2jj())
+        if (len(Ws) > 0) and (len(Hs) > 0):
+          for H in Hs:
+            for W in Ws:
+              mt2Calculator.setJet1(H.pt, H.eta, H.phi)
+              mt2Calculator.setJet2(W.pt, W.eta, W.phi)
+              mt2WH.append(mt2Calculator.mt2jj())
         
         #MT2bbjj
 
-#        mt2bbjj =[]
-#        mt2bjjb = []
+        mt2bbjj =[]
+        mt2bjjb = []
         
-#        imt2 = 0
+        imt2 = 0
 
-#        for b,s in itertools.combinations(bs, 2):
-#          for j,z in itertools.combinations(js, 2):
-#            if (b.fromH == 1 and s.fromH == 1 and j.fromW == 1 and z.fromW == 1 and (b.genPartIdxMother == s.genPartIdxMother) and (j.genPartIdxMother == z.genPartIdxMother)):
-#              imt2 += 1
-#              mt2Calculator.setBJet1(b.pt, b.eta, b.phi)
-#              mt2Calculator.setBJet2(s.pt, s.eta, s.phi)
-#              mt2Calculator.setJet1(j.pt, j.eta, j.phi)
-#              mt2Calculator.setJet2(z.pt, z.eta, z.phi)
-#              mt2bbjj.append(mt2Calculator.mt2bbjj())
-#              mt2bjjb.append(mt2Calculator.mt2bjjb())
+        if len(bs) > 1 and len(js) > 1:
+          for b,s in itertools.combinations(bs, 2):
+            for j,z in itertools.combinations(js, 2):
+              if (b.fromH == 1 and s.fromH == 1 and j.fromW == 1 and z.fromW == 1 and (b.genPartIdxMother == s.genPartIdxMother) and (j.genPartIdxMother == z.genPartIdxMother)):
+                imt2 += 1
+                mt2Calculator.setBJet1(b.pt, b.eta, b.phi)
+                mt2Calculator.setBJet2(s.pt, s.eta, s.phi)
+                mt2Calculator.setJet1(j.pt, j.eta, j.phi)
+                mt2Calculator.setJet2(z.pt, z.eta, z.phi)
+                mt2bbjj.append(mt2Calculator.mt2bbjj())
+                mt2bjjb.append(mt2Calculator.mt2bjjb())
 
 
         #NEW MT2
@@ -276,14 +277,14 @@ class GenAnalyzer(Module):
 
 
         #MT2
-#        self.out.fillBranch("ngenWH",          len(Hs)*len(Ws) )
-#        if (len(Hs)*len(Ws) >0):
-#          self.out.fillBranch("GenMT2_WH",       mt2WH)
+        self.out.fillBranch("ngenWH",          len(Hs)*len(Ws) )
+        if (len(Hs)*len(Ws) >0):
+          self.out.fillBranch("GenMT2_WH",       mt2WH)
 
-#        self.out.fillBranch("ngenmt2",          imt2)
-#        if imt2 > 0:
-#          self.out.fillBranch("GenMT2_bbjj",       mt2bbjj)
-#          self.out.fillBranch("GenMT2_bjjb",       mt2bjjb)
+        self.out.fillBranch("ngenmt2",          imt2)
+        if imt2 > 0:
+          self.out.fillBranch("GenMT2_bbjj",       mt2bbjj)
+          self.out.fillBranch("GenMT2_bjjb",       mt2bjjb)
 
 
         self.out.fillBranch("ngenW",          len(Ws) )
