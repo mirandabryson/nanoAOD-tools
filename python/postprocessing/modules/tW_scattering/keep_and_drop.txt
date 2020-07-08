@@ -25,3 +25,7 @@ keep Genj*
 keep GenDeltaR*
 keep GenMCT
 keep GenMbb
+keep nbb
+keep bb*
+keep njj
+keep jj*
