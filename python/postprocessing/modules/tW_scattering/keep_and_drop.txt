@@ -2,6 +2,7 @@
 drop * # start with all
 keep Jet*
 keep FatJet*
+keep SubJet*
 keep GenJet*
 keep Electron*
 keep Muon*
@@ -29,3 +30,5 @@ keep nbb
 keep bb*
 keep njj
 keep jj*
+keep nWH
+keep WHptMET

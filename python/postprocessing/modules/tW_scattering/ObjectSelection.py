@@ -98,7 +98,7 @@ class PhysicsObjects(Module):
         self.out.branch("jj_mass"               ,"F",  lenVar="njj")
         self.out.branch("MCTjj"               ,"F",  lenVar="njj")
 
-
+        self.out.branch("WHptMET"             ,"F",  lenVar="nWH")
 
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -334,6 +334,7 @@ class PhysicsObjects(Module):
                 phijj = self.Phijj(b,j)
                 Mctjj.append(mct)
                 jj.append({'pt': ptjj, 'eta': etajj, 'phi': phijj, 'mass': Mjj})
+
         
         cleanMaskW  = []
         isGoodFatJet   = []
@@ -370,7 +371,20 @@ class PhysicsObjects(Module):
                 
                     if self.isFatJetfromH(f):
                         fatjetsfromH.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
-                       
+        
+        WHptmet = []
+        iWH = 0
+        for f in fatjets:
+            if self.isFatJetfromH(f):
+               for j in fatjets:
+                    if self.isFatJetfromW(j):
+                        iWH += 1
+#                        print '%d' %(iWH)
+                        whpt = self.Ptjj(f, j)
+                        whptmet = whpt/met_pt
+                        WHptmet.append(whptmet)
+
+            
 
         # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
         bjets       = sorted(bjets, key = lambda i: i['pt'], reverse=True)
@@ -400,6 +414,9 @@ class PhysicsObjects(Module):
         self.out.fillBranch("IsoTrack_isVeto",      isVetoIsoTrack)
         self.out.fillBranch("nVetoIsoTrack",        sum(isVetoIsoTrack))
 
+        self.out.fillBranch("nWH",              iWH)
+        if iWH > 0:
+            self.out.fillBranch("WHptMET",      WHptmet)
 
         goodjets_pd = pd.DataFrame(goodjets)
         self.out.fillBranch("nGoodJet",          len(goodjets_pd) )
