@@ -19,6 +19,9 @@ keep genWeight
 keep weight
 keep nGoodBTag
 keep nGoodJet
+keep GoodJet*
+keep FatJetfromW*
+keep FatJetfromH*
 keep GenH*
 keep GenW*
 keep Genb*
@@ -26,9 +29,12 @@ keep Genj*
 keep GenDeltaR*
 keep GenMCT
 keep GenMbb
+keep nWH
+keep WHptMET
 keep nbb
 keep bb*
 keep njj
 keep jj*
-keep nWH
-keep WHptMET
+keep Dphi*
+keep mindphijmet
+keep nbbjj
