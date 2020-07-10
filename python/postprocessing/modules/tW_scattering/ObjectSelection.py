@@ -423,8 +423,8 @@ class PhysicsObjects(Module):
                     maxpt = j.pt + i.pt
                     leadjet = i
                     subjet = j
-                    dphilead = self.deltaPhi(leadjet.pt, met_pt)
-                    dphisub = self.deltaPhi(subjet.pt, met_pt)
+                    dphilead = self.deltaPhi(leadjet.phi, met_phi)
+                    dphisub = self.deltaPhi(subjet.phi, met_phi)
         
 
         ij = 0
