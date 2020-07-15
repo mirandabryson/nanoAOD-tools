@@ -2,7 +2,6 @@
 drop * # start with all
 keep Jet*
 keep FatJet*
-keep SubJet*
 keep GenJet*
 keep Electron*
 keep Muon*
@@ -17,11 +16,12 @@ keep run
 keep luminosityBlock
 keep genWeight
 keep weight
-keep nGoodBTag
-keep nGoodJet
 keep GoodJet*
+keep BJet*
 keep FatJetfromW*
+keep MTWmet
 keep FatJetfromH*
+keep MTHmet
 keep GenH*
 keep GenW*
 keep Genb*
@@ -37,4 +37,5 @@ keep njj
 keep jj*
 keep Dphi*
 keep mindphijmet
-keep nbbjj
+keep minMTbmet
+keep MTak8jmet
