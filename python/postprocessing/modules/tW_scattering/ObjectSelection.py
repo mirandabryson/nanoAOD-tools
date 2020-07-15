@@ -81,12 +81,12 @@ class PhysicsObjects(Module):
         self.out.branch("FatJetfromW_pt"    ,"F",  lenVar="nFatJetfromW")
         self.out.branch("FatJetfromW_eta"   ,"F",  lenVar="nFatJetfromW")
         self.out.branch("FatJetfromW_phi"   ,"F",  lenVar="nFatJetfromW")
-#        self.out.branch("MTWmet"           ,"F")
+        self.out.branch("MTWmet"           ,"F",   lenVar="nleadW")
 
         self.out.branch("FatJetfromH_pt"    ,"F",  lenVar="nFatJetfromH")
         self.out.branch("FatJetfromH_eta"   ,"F",  lenVar="nFatJetfromH")
         self.out.branch("FatJetfromH_phi"   ,"F",  lenVar="nFatJetfromH")
-#        self.out.branch("MTHmet"           ,"F",   lenVar="nH")
+        self.out.branch("MTHmet"           ,"F",   lenVar="nleadH")
         
         self.out.branch("bb_pt"               ,"F",  lenVar="nbb")
         self.out.branch("bb_eta"               ,"F",  lenVar="nbb")
@@ -94,7 +94,7 @@ class PhysicsObjects(Module):
         self.out.branch("bb_mass"               ,"F",  lenVar="nbb")
         self.out.branch("bb_mct"               ,"F",  lenVar="nbb")
         self.out.branch("Dphibbmet"           ,"F",  lenVar="nbb")
-#        self.out.branch("minMTbmet"           ,"F")
+        self.out.branch("minMTbmet"           ,"F", lenVar="nbb")
 
         self.out.branch("jj_pt"               ,"F", lenVar="njj")
         self.out.branch("jj_eta"               ,"F", lenVar="njj")
@@ -103,7 +103,7 @@ class PhysicsObjects(Module):
         self.out.branch("jj_mct"               ,"F", lenVar="njj")
         self.out.branch("mindphijmet"         ,"F",  lenVar="njj")
 
-#        self.out.branch("MTak8jmet"           ,"F")
+        self.out.branch("MTak8jmet"           ,"F",   lenVar="nleadak8j")
 
         self.out.branch("WHptMET"             ,"F",  lenVar="nWH")
         self.out.branch("DphiWH"              ,"F",  lenVar="nWH")
@@ -423,28 +423,25 @@ class PhysicsObjects(Module):
                
 
         #if there are two jets, append variables
-        ib = 0
         if maxptbb != -9999:
-            ib = 1
-            bb.append({'pt': ptbb, 'eta': etabb, 'phi': phibb, 'mass': Mbb, "mct": mct, "dphibbmet": dphibb})
-#            mtbmet.append(mtblead)
-#            mtbmet.append(mtbsub)
+            mtbmet.append(mtblead)
+            mtbmet.append(mtbsub)
+            minmtbmet = min(mtbmet)
+            bb.append({'pt': ptbb, 'eta': etabb, 'phi': phibb, 'mass': Mbb, "mct": mct, "dphibbmet": dphibb, "minmtbmet": minmtbmet})
+
 
         #BBJJs
 
-        dphibbjj = []
+        bbjj = []
 
-        ibbjj = 0
         if (maxptjj != -9999) and (maxptbb != -9999): 
-            ibbjj = 1
-            dphi = self.deltaPhi(phibb,phijj)
-            dphibbjj.append(dphi)
+            dphibbjj = self.deltaPhi(phibb,phijj)
+            bbjj.append({"dphibbjj": dphibbjj})
               
 
         #WH
 
-        WHptmet = []
-        dphiwh = []
+        WH = []
         maxptwh = -9999
         for f,j in itertools.combinations(fatjets, 2):
             if (self.isFatJetfromH(f) and  self.isFatJetfromW(j)) or (self.isFatJetfromH(j) and  self.isFatJetfromW(f)):
@@ -456,57 +453,45 @@ class PhysicsObjects(Module):
                     whptmet = whpt/met_pt
                     dphiWH = self.deltaPhi(leadjet.phi,leadojet.phi)
 
-        iwh = 0
         if maxptwh != -9999:
-            iwh = 1
-            WHptmet.append(whptmet)
-            dphiwh.append(dphiWH)
+            WH.append({"WHptMET": whptmet, "dphiWH": dphiWH})
 
         #MT
         
         
- #       maxwpt = -9999
- #       maxhpt = -9999
- #       maxfjpt = -9999
- #       nW = 0
- #       nH = 0
- #       for j in fatjets:
- #           if self.isFatJetfromW(j):
- #               if j.pt > maxwpt:
- #                   nW += 1
- #                   maxwpt = j.pt
- #                   leadW = j
- #                   mtwMET = self.MT(leadW, met_pt, met_phi)
- #           elif self.isFatJetfromH(j):
- #               nH += 1
- #               if j.pt > maxhpt:
- #                   maxhpt = j.pt
- #                   leadH = j 
- #                   mthMET = self.MT(leadH, met_pt, met_phi)
- #           elif nW == 0 and nH == 0:
- #               if j.pt > maxfjpt:
- #                   maxfjpt = j.pt
- #                   leadfj = j
- #                   mtfjMET = self.MT(leadfj, met_pt, met_phi)
- #       
- #       mtwmet = []
- #       mthmet = []
- #       mtfjmet = []
- #       iW = 0
- #       iH = 0
- #       iFJ = 0
- #       if maxwpt != -9999 and nW != 0:
- #           iW = 1
- #           mtwmet.append(mtwMET)
- #       if maxhpt != -9999 and nH != 0:
- #           iH = 1
- #           mthmet.append(mthMET)
-##            print'%f'%(max(mthmet))
- #       if maxfjpt != -9999 and nW == 0 and nH == 0:
- #           iFJ = 1
- #           mtfjmet.append(mtfjMET)
-##            print'%f'%(max(mtfjmet))
- #                       
+        maxwpt = -9999
+        maxhpt = -9999
+        maxfjpt = -9999
+        nW = 0
+        nH = 0
+        for j in fatjets:
+            if self.isFatJetfromW(j):
+                nW += 1
+                if j.pt > maxwpt:
+                    maxwpt = j.pt
+                    leadW = j
+                    mtwMET = self.MT(leadW, met_pt, met_phi)
+            elif self.isFatJetfromH(j):
+                nH += 1
+                if j.pt > maxhpt:
+                    maxhpt = j.pt
+                    leadH = j 
+                    mthMET = self.MT(leadH, met_pt, met_phi)
+            elif nW == 0 and nH == 0:
+                if j.pt > maxfjpt:
+                    maxfjpt = j.pt
+                    leadfj = j
+                    mtfjMET = self.MT(leadfj, met_pt, met_phi)
+        
+        leadW = []
+        leadH = []
+        leadFJ = []
+        if maxwpt != -9999 and nW != 0:
+            leadW.append({"mtwMET": mtwMET})
+        if maxhpt != -9999 and nH != 0:
+            leadH.append({"mthMET": mthMET})
+        if maxfjpt != -9999 and nW == 0 and nH == 0:
+            leadFJ.append({"mtfjMET": mtfjMET})
 
 
         # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
@@ -538,28 +523,21 @@ class PhysicsObjects(Module):
         self.out.fillBranch("nVetoIsoTrack",        sum(isVetoIsoTrack))
 
 
-        self.out.fillBranch("nWH",              iwh)
-        if iwh > 0:
-            self.out.fillBranch("WHptMET",      WHptmet)
-            self.out.fillBranch("DphiWH",       dphiwh)
-
-        self.out.fillBranch("nbbjj",            ibbjj)
-        if ibbjj > 0:
-            self.out.fillBranch("Dphibbjj",     dphibbjj)
-
-
-#        if ib>0:
-#            self.out.fillBranch("minMTbmet",      min(mtbmet))
     
-#        self.out.fillBranch("nH",           iW)
-#        if iW>0:
-#            self.out.fillBranch("MTWmet",         max(mtwmet))
-            
-#        if iH>0:
-#            self.out.fillBranch("MTHmet",         max(mthmet))
-            
-#        if iFJ>0:
-#            self.out.fillBranch("MTak8jmet",        max(mtfjmet))
+        leadW_pd = pd.DataFrame(leadW)
+        self.out.fillBranch("nleadW",           len(leadW_pd))
+        if len(leadW_pd)>0:
+            self.out.fillBranch("MTWmet",         leadW_pd['mtwMET'].tolist())
+
+        leadH_pd = pd.DataFrame(leadH)
+        self.out.fillBranch("nleadH",           len(leadH_pd))
+        if len(leadH_pd)>0:
+            self.out.fillBranch("MTHmet",         leadH_pd['mthMET'].tolist())
+
+        leadFJ_pd = pd.DataFrame(leadFJ)
+        self.out.fillBranch("nleadak8j",           len(leadFJ_pd))
+        if len(leadFJ_pd)>0:
+            self.out.fillBranch("MTak8jmet",         leadFJ_pd['mtfjMET'].tolist())
             
 
         goodjets_pd = pd.DataFrame(goodjets)
@@ -586,6 +564,7 @@ class PhysicsObjects(Module):
             self.out.fillBranch("bb_mass",       bb_pd.sort_values(by='pt', ascending=False)['mass'].tolist() )
             self.out.fillBranch("bb_mct",         bb_pd.sort_values(by='pt', ascending=False)['mct'].tolist())
             self.out.fillBranch("Dphibbmet",         bb_pd.sort_values(by='pt', ascending=False)['dphibbmet'].tolist())
+            self.out.fillBranch("minMTbmet",         bb_pd.sort_values(by='pt', ascending=False)['minmtbmet'].tolist())
 
         jj_pd = pd.DataFrame(jj)
         self.out.fillBranch("njj",          len(jj_pd) )
@@ -596,6 +575,17 @@ class PhysicsObjects(Module):
             self.out.fillBranch("jj_mass",       jj_pd.sort_values(by='pt', ascending=False)['mass'].tolist() )
             self.out.fillBranch("jj_mct",         jj_pd.sort_values(by='pt', ascending=False)['mct'].tolist())
             self.out.fillBranch("mindphijmet",         jj_pd.sort_values(by='pt', ascending=False)['mindphijmet'].tolist())
+
+        WH_pd = pd.DataFrame(WH)
+        self.out.fillBranch("nWH",              len(WH_pd))
+        if len(WH_pd) > 0:
+            self.out.fillBranch("WHptMET",      WH_pd['WHptMET'].tolist() )
+            self.out.fillBranch("DphiWH",       WH_pd['dphiWH'].tolist() )
+
+        bbjj_pd = pd.DataFrame(bbjj)
+        self.out.fillBranch("nbbjj",            len(bbjj_pd))
+        if len(bbjj_pd) > 0:
+            self.out.fillBranch("Dphibbjj",     bbjj_pd['dphibbjj'].tolist())
 
 
         goodfatjets_pd = pd.DataFrame(goodfatjets)
