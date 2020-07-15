@@ -235,7 +235,7 @@ class PhysicsObjects(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
-        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
+#        print 'event %d *dr phil voice* shut the hell up bitch go kill yourself'%( event.event)
 
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
