@@ -446,7 +446,7 @@ class PhysicsObjects(Module):
         for f,j in itertools.combinations(fatjets, 2):
             if (self.isFatJetfromH(f) and  self.isFatJetfromW(j)) or (self.isFatJetfromH(j) and  self.isFatJetfromW(f)):
                 if( (f.pt + j.pt) > maxptwh):
-                    maxptwh = f.pt + i.pt
+                    maxptwh = f.pt + j.pt
                     leadjet = f
                     leadojet = j                    
                     whpt = self.Ptjj(leadjet, leadojet)
