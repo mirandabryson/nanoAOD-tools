@@ -25,13 +25,6 @@ keep MTWmet
 keep nH
 keep H*
 keep MTHmet
-keep GenH*
-keep GenW*
-keep Genb*
-keep Genj*
-keep GenDeltaR*
-keep GenMCT
-keep GenMbb
 keep nWH
 keep WHptMET
 keep nbb
