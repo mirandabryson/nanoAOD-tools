@@ -17,10 +17,13 @@ keep luminosityBlock
 keep genWeight
 keep weight
 keep GoodJet*
+keep nBJet
 keep BJet*
-keep FatJetfromW*
+keep nW
+keep W*
 keep MTWmet
-keep FatJetfromH*
+keep nH
+keep H*
 keep MTHmet
 keep GenH*
 keep GenW*
