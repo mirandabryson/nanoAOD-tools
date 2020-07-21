@@ -74,6 +74,10 @@ class PhysicsObjects(Module):
         self.out.branch("BJet_eta"   ,"F",  lenVar="nBJet")
         self.out.branch("BJet_phi"   ,"F",  lenVar="nBJet")
 
+        self.out.branch("BFatJet_pt"    ,"F",  lenVar="nBFatJet")
+        self.out.branch("BFatJet_eta"   ,"F",  lenVar="nBFatJet")
+        self.out.branch("BFatJet_phi"   ,"F",  lenVar="nBFatJet")
+
         self.out.branch("GoodFatJet_pt"    ,"F",  lenVar="nGoodFatJet")
         self.out.branch("GoodFatJet_eta"   ,"F",  lenVar="nGoodFatJet")
         self.out.branch("GoodFatJet_phi"   ,"F",  lenVar="nGoodFatJet")
@@ -137,6 +141,16 @@ class PhysicsObjects(Module):
 
     def isGoodFatJet(self, fatjet):
         return (fatjet.pt > 200 and fatjet.jetId>0)
+
+
+    def isGoodBFatJet(self, fatjet):
+        if self.year == 2016:
+            threshold = 0.6321
+        if self.year == 2017:
+            threshold = 0.4941
+        if self.year == 2018:
+            threshold = 0.4184
+        return(self.isGoodFatJet(fatjet) and fatjet.btagDeepB > threshold)
 
     def isFatJetfromW(self, fatjet):
         return(self.isGoodFatJet(fatjet) and fatjet.deepTagMD_WvsQCD > 0.9)
@@ -343,7 +357,8 @@ class PhysicsObjects(Module):
         goodfatjets = []
         Ws = []
         Hs = []
-        
+        bfatjets = []
+
         for f in fatjets:
 
             f.cleanMask = 1
@@ -365,6 +380,9 @@ class PhysicsObjects(Module):
                 if self.isGoodFatJet(f):
                     goodfatjets.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
                     
+                    if self.isGoodBFatJet(f):
+                        bfatjets.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
+
                     if self.isFatJetfromH(f):
                         Hs.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
                     elif self.isFatJetfromW(f):
@@ -560,6 +578,13 @@ class PhysicsObjects(Module):
             self.out.fillBranch("BJet_pt",        bjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
             self.out.fillBranch("BJet_eta",       bjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
             self.out.fillBranch("BJet_phi",       bjets_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
+
+        bfatjets_pd = pd.DataFrame(bfatjets)
+        self.out.fillBranch("nBFatJet",          len(bfatjets_pd) )
+        if len(bfatjets_pd)>0:
+            self.out.fillBranch("BFatJet_pt",     bfatjets_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
+            self.out.fillBranch("BFatJet_eta",    bfatjets_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )
+            self.out.fillBranch("BFatJet_phi",    bfatjets_pd.sort_values(by='pt', ascending=False)['phi'].tolist() )
 
         bb_pd = pd.DataFrame(bb)
         self.out.fillBranch("nbb",          len(bb_pd) )

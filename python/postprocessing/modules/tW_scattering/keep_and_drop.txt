@@ -19,6 +19,8 @@ keep weight
 keep GoodJet*
 keep nBJet
 keep BJet*
+keep nBFatJet
+keep BFatJet*
 keep nW
 keep W*
 keep MTWmet
