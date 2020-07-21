@@ -17,6 +17,7 @@ keep luminosityBlock
 keep genWeight
 keep weight
 keep GoodJet*
+keep GoodFatJet*
 keep nBJet
 keep BJet*
 keep nBFatJet
