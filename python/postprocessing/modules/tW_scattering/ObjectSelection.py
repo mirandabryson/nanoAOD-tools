@@ -113,6 +113,15 @@ class PhysicsObjects(Module):
         self.out.branch("DphiWH"              ,"F",  lenVar="nWH")
         self.out.branch("Dphibbjj"            ,"F",  lenVar="nbbjj")
 
+        self.out.branch("ak4matchedH_pt"       ,"F",  lenVar="njmH")
+        self.out.branch("ak4matchedH_eta"       ,"F",  lenVar="njmH")
+        self.out.branch("ak4matchedH_phi"       ,"F",  lenVar="njmH")
+        
+
+        self.out.branch("bjetmatchedH_pt"       ,"F",  lenVar="nbmH")
+        self.out.branch("bjetmatchedH_eta"       ,"F",  lenVar="nbmH")
+        self.out.branch("bjetmatchedH_phi"       ,"F",  lenVar="nbmH")
+
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -185,7 +194,7 @@ class PhysicsObjects(Module):
         return abs(dphi)
 
     def deltaR2(self, l1, l2):
-        return self.deltaPhi(l1.phi, l2.phi)**2 + (l1.eta - l2.eta)**2
+        return self.deltaPhi(l1['phi'], l2['phi'])**2 + (l1['eta'] - l2['eta'])**2
 
     def deltaR(self, l1, l2):
         return math.sqrt(self.deltaR2(l1,l2))
@@ -323,7 +332,6 @@ class PhysicsObjects(Module):
         nonbjets    = []
 
         for j in jets:
-
             j.cleanMask = 1
             for coll in [electrons, muons]:
                 for p in coll:
@@ -360,7 +368,6 @@ class PhysicsObjects(Module):
         bfatjets = []
 
         for f in fatjets:
-
             f.cleanMask = 1
             for coll in [electrons, muons]:
                 for p in coll:
@@ -387,10 +394,6 @@ class PhysicsObjects(Module):
                         Hs.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
                     elif self.isFatJetfromW(f):
                         Ws.append({'pt':f.pt, 'eta':f.eta, 'phi':f.phi})
-                
-   
-        
-
         
         #JJs
         jj = []
@@ -518,6 +521,20 @@ class PhysicsObjects(Module):
             leadFJ.append({"mtfjMET": mtfjMET})
 
 
+
+        #MATCHING AK8 AND AK4
+        #HIGGS
+        jmatchH = []
+        bmatchH = []
+        for H in Hs:
+            for j in goodjets:
+                if (self.deltaR(H,j) < 0.4):
+                    jmatchH.append({'pt':j['pt'], 'eta':j['eta'], 'phi':j['phi']})
+            for b in bjets:
+                if (self.deltaR(H,b) < 0.4):
+                    bmatchH.append({'pt':b['pt'], 'eta':b['eta'], 'phi':b['phi']})
+
+
         # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
         bjets       = sorted(bjets, key = lambda i: i['pt'], reverse=True)
         goodjets    = sorted(goodjets, key = lambda i: i['pt'], reverse=True)
@@ -547,7 +564,23 @@ class PhysicsObjects(Module):
         self.out.fillBranch("nVetoIsoTrack",        sum(isVetoIsoTrack))
 
 
+
+        jmatchH_pd = pd.DataFrame(jmatchH)
+        self.out.fillBranch("njmH",             len(jmatchH_pd))
+        if len(jmatchH_pd)>0:
+            self.out.fillBranch("ak4matchedH_pt",    jmatchH_pd['pt'].tolist())
+            self.out.fillBranch("ak4matchedH_eta",   jmatchH_pd['eta'].tolist())
+            self.out.fillBranch("ak4matchedH_phi",   jmatchH_pd['phi'].tolist())
     
+
+        bmatchH_pd = pd.DataFrame(bmatchH)
+        self.out.fillBranch("nbmH",             len(bmatchH_pd))
+        if len(bmatchH_pd)>0:
+            self.out.fillBranch("bjetmatchedH_pt",    bmatchH_pd['pt'].tolist())
+            self.out.fillBranch("bjetmatchedH_eta",   bmatchH_pd['eta'].tolist())
+            self.out.fillBranch("bjetmatchedH_phi",   bmatchH_pd['phi'].tolist())
+    
+
         leadW_pd = pd.DataFrame(leadW)
         self.out.fillBranch("nleadW",           len(leadW_pd))
         if len(leadW_pd)>0:

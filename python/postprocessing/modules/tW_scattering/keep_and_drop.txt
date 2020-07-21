@@ -38,3 +38,7 @@ keep Dphi*
 keep mindphijmet
 keep minMTbmet
 keep MTak8jmet
+keep ak4matchedH*
+keep njmH
+keep bjetmatchedH*
+keep nbmH
