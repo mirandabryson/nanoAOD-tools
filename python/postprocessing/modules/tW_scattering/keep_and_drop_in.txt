@@ -6,7 +6,9 @@ keep GenPart*
 keep FatJet*
 keep Electron*
 keep Muon*
+keep GenMET*
 keep MET*
+keep PuppiMET*
 keep event
 keep run
 keep luminosityBlock

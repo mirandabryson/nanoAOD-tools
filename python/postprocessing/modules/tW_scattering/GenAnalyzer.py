@@ -79,6 +79,7 @@ class GenAnalyzer(Module):
         self.out.branch("nLepFromTop",     "I")
         self.out.branch("nLepFromTau",    "I")
         self.out.branch("nLepFromW",    "I")
+        self.out.branch("nGenTau",    "I")
         self.out.branch("nLepFromZ",    "I")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -119,6 +120,7 @@ class GenAnalyzer(Module):
         Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
 
         leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
+        taus    = [ p for p in GenParts if ((abs(p.pdgId)==15) and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0) ) ]
 
         scatter = [ p for p in GenParts if (p.genPartIdxMother==0 or p.genPartIdxMother==1) ] # get the intial particles from 2->N scattering
         
@@ -148,6 +150,8 @@ class GenAnalyzer(Module):
         self.out.fillBranch("nLepFromTau", sum( [ l.fromTau for l in leptons ] ) )
         self.out.fillBranch("nLepFromW",   sum( [ l.fromW for l in leptons ] ) )
         self.out.fillBranch("nLepFromZ",   sum( [ l.fromZ for l in leptons ] ) )
+
+        self.out.fillBranch("nGenTau",        len(taus) )
 
         self.out.fillBranch("nGenL",          len(leptons) )
         if len(leptons)>0:

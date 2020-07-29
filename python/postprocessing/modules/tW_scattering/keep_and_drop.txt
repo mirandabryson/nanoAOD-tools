@@ -1,11 +1,64 @@
 # this is a comment
 drop * # start with all
-keep Jet*
-keep FatJet*
-keep GenJet*
-keep Electron*
-keep Muon*
+
+keep Jet_pt
+keep Jet_phi
+keep Jet_eta
+keep Jet_mass
+keep Jet_btagDeepB
+keep Jet_genJetIdx
+keep Jet_hadronFlavour
+keep Jet_jetId
+keep Jet_muEF
+keep Jet_chEmEF
+keep Jet_bRegCorr
+keep Jet_muonSubtrFactor
+keep Jet_puId
+keep Jet_rawFactor
+
+keep FatJet_pt
+keep FatJet_phi
+keep FatJet_eta
+keep FatJet_mass
+keep FatJet_btagDeepB
+keep FatJet_deepTagMD_TvsQCD
+keep FatJet_deepTagMD_WvsQCD
+
+keep GenJet_pt
+keep GenJet_phi
+keep GenJet_eta
+keep GenJet_mass
+keep GenJet_hadronFlavour
+
+keep Electron_pt
+keep Electron_phi
+keep Electron_eta
+keep Electron_charge
+keep Electron_mass
+keep Electron_convVeto
+keep Electron_mvaTTH
+keep Electron_pfRelIso03_all
+keep Electron_cutBased
+keep Electron_dxy
+keep Electron_dz
+keep Electron_pdgId
+
+keep Muon_pt
+keep Muon_phi
+keep Muon_eta
+keep Muon_charge
+keep Muon_mass
+keep Muon_dxy
+keep Muon_dz
+keep Muon_mvaTTH
+keep Muon_pfRelIso03_all
+keep Muon_mediumId
+keep Muon_pdgId
+
+keep GenMET*
 keep MET*
+keep PuppiMET*
+
 keep Lepton*
 keep event
 keep run
@@ -15,11 +68,18 @@ keep weight
 keep nGoodBTag
 keep nGoodJet
 keep nLepFromTop
+keep nGenTau
 keep nLepFromTau
 keep nLepFromW
 keep nLepFromZ
+keep nVetoLepton
 keep GenL*
 keep W*
 keep Top*
 keep Spectator*
 keep Scatter*
+keep RecoW*
+keep is*
+keep diWness
+keep MT
+keep MT_puppi
