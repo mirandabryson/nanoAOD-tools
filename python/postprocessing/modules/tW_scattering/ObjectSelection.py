@@ -337,8 +337,8 @@ class PhysicsObjects(Module):
         # make pandas dataframe out of list
         leptons_pd = pd.DataFrame(leptons)
 
-        self.out.fillBranch("nLepton",          len(leptons_pd) )
         self.out.fillBranch("nVetoLepton",          len(vleptons) )
+        self.out.fillBranch("nLepton",          len(leptons_pd) )
         if len(leptons_pd)>0:
             self.out.fillBranch("Lepton_pt",        leptons_pd.sort_values(by='pt', ascending=False)['pt'].tolist() )
             self.out.fillBranch("Lepton_eta",       leptons_pd.sort_values(by='pt', ascending=False)['eta'].tolist() )

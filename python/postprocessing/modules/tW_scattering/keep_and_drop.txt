@@ -15,6 +15,10 @@ keep Jet_bRegCorr
 keep Jet_muonSubtrFactor
 keep Jet_puId
 keep Jet_rawFactor
+keep Jet_isGoodJet
+keep Jet_isGoodJetAll
+keep Jet_isGoodBJet
+keep Jet_leptonClean
 
 keep FatJet_pt
 keep FatJet_phi
@@ -42,6 +46,8 @@ keep Electron_cutBased
 keep Electron_dxy
 keep Electron_dz
 keep Electron_pdgId
+keep Electron_isTight
+keep Electron_isVeto
 
 keep Muon_pt
 keep Muon_phi
@@ -54,6 +60,8 @@ keep Muon_mvaTTH
 keep Muon_pfRelIso03_all
 keep Muon_mediumId
 keep Muon_pdgId
+keep Muon_isTight
+keep Muon_isVeto
 
 keep GenMET*
 keep MET*
