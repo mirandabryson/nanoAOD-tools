@@ -53,7 +53,12 @@ class PhysicsObjects(Module):
         self.out.branch("RecoW_eta", "F", lenVar="nRecoW")
         self.out.branch("RecoW_phi", "F", lenVar="nRecoW")
         self.out.branch("RecoW_mass", "F", lenVar="nRecoW")
-        self.out.branch("RecoW_genMatch", "I", lenVar="nRecoW")
+        self.out.branch("RecoW_genPt", "F", lenVar="nRecoW")
+        self.out.branch("RecoW_genEta", "F", lenVar="nRecoW")
+        self.out.branch("RecoW_genPhi", "F", lenVar="nRecoW")
+        self.out.branch("RecoW_genMass", "F", lenVar="nRecoW")
+        self.out.branch("RecoW_qglSum", "F", lenVar="nRecoW")
+        self.out.branch("RecoW_qglProd", "F", lenVar="nRecoW")
 
 
         ## New collection of Jets. #FIXME overlap removal with GoodLeptons
@@ -71,6 +76,7 @@ class PhysicsObjects(Module):
         self.out.branch("Jet_isGoodJetAll", "I", lenVar="nJet")
         self.out.branch("Jet_isGoodBJet",   "I", lenVar="nJet")
         self.out.branch("Jet_leptonClean",  "I", lenVar="nJet")
+        self.out.branch("Jet_WIdx",  "I", lenVar="nJet")
 
 
         # Counter for good b-tags
@@ -131,13 +137,15 @@ class PhysicsObjects(Module):
     def invMass(self, o1, o2):
         v1 = ROOT.TLorentzVector()
         v2 = ROOT.TLorentzVector()
-        v1.SetPtEtaPhiM(o1['pt'], o1['eta'], o1['phi'], 0)
-        v2.SetPtEtaPhiM(o2['pt'], o2['eta'], o2['phi'], 0)
+        v1.SetPtEtaPhiM(o1['pt'], o1['eta'], o1['phi'], o1['mass'])
+        v2.SetPtEtaPhiM(o2['pt'], o2['eta'], o2['phi'], o2['mass'])
         return (v1+v2).M(), (v1+v2).Pt(), (v1+v2).Eta(), (v1+v2).Phi()
 
     def getW(self, jet1, jet2):
         mass, pt, eta, phi = self.invMass(jet1,jet2)
-        return {'chi2': abs(mass-80.)/20., 'mass':mass, 'pt':pt, 'eta':eta, 'phi':phi}
+        qgl_sum = jet1['qgl'] + jet2['qgl']
+        qgl_prod = jet1['qgl'] * jet2['qgl']
+        return {'chi2': abs(mass-80.)/20., 'mass':mass, 'pt':pt, 'eta':eta, 'phi':phi, 'qgl_sum':qgl_sum, 'qgl_prod': qgl_prod}
 
     def getWcandidates(self, jets):
         uniqueCombs = [(0,1,2,3), (1,2,3,0), (0,2,1,3)]
@@ -161,14 +169,35 @@ class PhysicsObjects(Module):
 
         return W_cand
             
+    def getRealWs(self, jets, genWs):
+        combs = [ comb for comb in itertools.combinations(jets, 2) ]
+        Wcands = []
+        for j1, j2 in combs:
+            Wcand = self.getW(j1, j2)
+            if j1['WIdx']==j2['WIdx'] and j1['WIdx']>-1:
+                Wcand['genPt'] = genWs[j1['WIdx']].pt
+                Wcand['genEta'] = genWs[j1['WIdx']].eta
+                Wcand['genPhi'] = genWs[j1['WIdx']].phi
+                Wcand['genMass'] = genWs[j1['WIdx']].mass
+            else:
+                Wcand['genPt']      = -9999
+                Wcand['genEta']     = -9999
+                Wcand['genPhi']     = -9999
+                Wcand['genMass']    = -9999
+            Wcands.append(Wcand)
+
+        return Wcands
+                
+
 
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
         jets        = Collection(event, "Jet")
+        genjets     = Collection(event, "GenJet")
         genW        = Collection(event, "W")
-
+        
         # MET
         met_pt  = event.MET_pt
         met_phi = event.MET_phi
@@ -231,6 +260,8 @@ class PhysicsObjects(Module):
         jets_out    = []
         bjets       = []
         nonbjets    = []
+        alljets = []
+        WIdx = []
 
         for j in jets:
 
@@ -247,19 +278,30 @@ class PhysicsObjects(Module):
             
             cleanMaskV.append(j.cleanMask)
 
+            # now get some info from the GenJets
+            j.WIdx = -1
+            if j.genJetIdx>-1 and j.genJetIdx<len(genjets): # apparently lowest pt genjets are not stored...
+                j.WIdx = genjets[j.genJetIdx].WIdx
+            WIdx.append(j.WIdx)
+
+            alljets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi, 'qgl':j.qgl, 'WIdx':j.WIdx})
+
             # Fill the other collections
             if j.cleanMask:
 
                 if self.isGoodJet(j):
-                    jets_out.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                    jets_out.append({'pt':j.pt_nom, 'eta':j.eta, 'phi':j.phi, 'qgl':j.qgl, 'WIdx':j.WIdx, 'mass':j.mass_nom})
                     
                     if self.isGoodBJet(j):
                         bjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
                     else:
-                        nonbjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+                        nonbjets.append({'pt':j.pt_nom, 'eta':j.eta, 'phi':j.phi, 'qgl':j.qgl, 'WIdx':j.WIdx, 'mass':j.mass_nom})
                 
                 if self.isFwdJet(j):
                     fwdjets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi})
+
+            #for idx, gjet in enumerate(genjets):
+            #    if 
                        
 
         # make sure the jets are properly sorted. they _should_ be sorted, but this can change once we reapply JECs if necessary
@@ -283,36 +325,37 @@ class PhysicsObjects(Module):
         ## W candidates
         # get any combination of 4 non b-jets
         # this is *very* inefficient. Need to think of a better way to reconstruct two Ws
-        W_cands = []
-        if len(nonbjets)>3:
-            W_cands = self.getWcandidates(nonbjets)
-
-        #print "nLepton", len(leptons)
-
-        diWness = 9999.
         recoWs = []
-        perfectMatch = False
-        if len(W_cands)>0:
-            for W_cand in W_cands:
-                genMatch1 = False
-                genMatch2 = False
-                for W in genW:
-                    if not genMatch1:
-                        genMatch1 = self.deltaR(Object.fromDict(W_cand['W'][0]), W)<0.4
-                    if not genMatch2:
-                        genMatch2 = self.deltaR(Object.fromDict(W_cand['W'][1]), W)<0.4
-                if genMatch1 and genMatch2:
-                    perfectMatch = W_cand
-         #           print "Nice, found the right pair"
-                    break
+        if len(jets_out)>3:
+            #W_cands = self.getWcandidates(nonbjets)
+            recoWs = self.getRealWs(jets_out, genW)
             
-            for recoW in W_cands[0]['W']:
-                genMatch = False
-                for W in genW:
-                    genMatch = self.deltaR(Object.fromDict(recoW), W)<0.4
-                    if genMatch: break
-                recoWs.append({'pt':recoW['pt'], 'eta':recoW['eta'], 'phi':recoW['phi'], 'mass':recoW['mass'], 'genMatch':genMatch})
-                diWness = W_cands[0]['chi2']
+
+        ### This doesn't really work
+        diWness = 9999.
+        #recoWs = []
+        #perfectMatch = False
+        #if len(W_cands)>0:
+        #    for W_cand in W_cands:
+        #        genMatch1 = False
+        #        genMatch2 = False
+        #        for W in genW:
+        #            if not genMatch1:
+        #                genMatch1 = self.deltaR(Object.fromDict(W_cand['W'][0]), W)<0.4
+        #            if not genMatch2:
+        #                genMatch2 = self.deltaR(Object.fromDict(W_cand['W'][1]), W)<0.4
+        #        if genMatch1 and genMatch2:
+        #            perfectMatch = W_cand
+        # #           print "Nice, found the right pair"
+        #            break
+        #    
+        #    for recoW in W_cands[0]['W']:
+        #        genMatch = False
+        #        for W in genW:
+        #            genMatch = self.deltaR(Object.fromDict(recoW), W)<0.4
+        #            if genMatch: break
+        #        recoWs.append({'pt':recoW['pt'], 'eta':recoW['eta'], 'phi':recoW['phi'], 'mass':recoW['mass'], 'genMatch':genMatch})
+        #        diWness = W_cands[0]['chi2']
 
 
         self.out.fillBranch("Muon_isTight",     isTightMuon)
@@ -323,6 +366,7 @@ class PhysicsObjects(Module):
         self.out.fillBranch("Jet_isGoodJet",    isGoodJet)
         self.out.fillBranch("Jet_isGoodJetAll", isGoodJetAll)
         self.out.fillBranch("Jet_isGoodBJet",   isGoodBJet)
+        self.out.fillBranch("Jet_WIdx",   WIdx)
         self.out.fillBranch("nGoodBTag",        sum(isGoodBJet))
         self.out.fillBranch("nGoodJet",         sum(isGoodJet))
 
@@ -357,7 +401,12 @@ class PhysicsObjects(Module):
             self.out.fillBranch("RecoW_eta",       recoWs_pd['eta'].tolist() )
             self.out.fillBranch("RecoW_phi",       recoWs_pd['phi'].tolist() )
             self.out.fillBranch("RecoW_mass",      recoWs_pd['mass'].tolist() )
-            self.out.fillBranch("RecoW_genMatch",  recoWs_pd['genMatch'].tolist() )
+            self.out.fillBranch("RecoW_genPt",     recoWs_pd['genPt'].tolist() )
+            self.out.fillBranch("RecoW_genEta",     recoWs_pd['genEta'].tolist() )
+            self.out.fillBranch("RecoW_genPhi",     recoWs_pd['genPhi'].tolist() )
+            self.out.fillBranch("RecoW_genMass",     recoWs_pd['genMass'].tolist() )
+            self.out.fillBranch("RecoW_qglSum",     recoWs_pd['qgl_sum'].tolist() )
+            self.out.fillBranch("RecoW_qglProd",     recoWs_pd['qgl_prod'].tolist() )
 
 
         return True

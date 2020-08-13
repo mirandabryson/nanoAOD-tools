@@ -2,9 +2,11 @@
 drop * # start with all
 
 keep Jet_pt
+keep Jet_pt_nom
 keep Jet_phi
 keep Jet_eta
 keep Jet_mass
+keep Jet_mass_nom
 keep Jet_btagDeepB
 keep Jet_genJetIdx
 keep Jet_hadronFlavour
@@ -19,6 +21,8 @@ keep Jet_isGoodJet
 keep Jet_isGoodJetAll
 keep Jet_isGoodBJet
 keep Jet_leptonClean
+keep Jet_qgl
+keep Jet_WIdx
 
 keep FatJet_pt
 keep FatJet_phi
@@ -33,6 +37,9 @@ keep GenJet_phi
 keep GenJet_eta
 keep GenJet_mass
 keep GenJet_hadronFlavour
+keep GenJet_partonFlavour
+keep GenJet_fromW
+keep GenJet_WIdx
 
 keep Electron_pt
 keep Electron_phi

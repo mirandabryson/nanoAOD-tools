@@ -54,6 +54,10 @@ class GenAnalyzer(Module):
         self.out.branch("GenL_fromZ", "I",    lenVar="nGenL")
         self.out.branch("GenL_fromW", "I",    lenVar="nGenL")
 
+        self.out.branch("GenJet_fromW", "I",    lenVar="nGenJet")
+        self.out.branch("GenJet_genPartWIdx", "I",    lenVar="nGenJet")
+        self.out.branch("GenJet_WIdx", "I",    lenVar="nGenJet")
+
         self.out.branch("Spectator_pt", "F",         lenVar="nSpectator")
         self.out.branch("Spectator_eta", "F",        lenVar="nSpectator")
         self.out.branch("Spectator_phi", "F",        lenVar="nSpectator")
@@ -67,8 +71,10 @@ class GenAnalyzer(Module):
         self.out.branch("W_pt", "F",         lenVar="nW")
         self.out.branch("W_eta", "F",        lenVar="nW")
         self.out.branch("W_phi", "F",        lenVar="nW")
+        self.out.branch("W_mass", "F",    lenVar="nW")
         self.out.branch("W_pdgId", "I",    lenVar="nW")
         self.out.branch("W_fromTop", "I",    lenVar="nW")
+        self.out.branch("W_genPartIdx", "I",    lenVar="nW")
 
         self.out.branch("Top_pt", "F",         lenVar="nTop")
         self.out.branch("Top_eta", "F",        lenVar="nTop")
@@ -105,7 +111,13 @@ class GenAnalyzer(Module):
             if (abs(genParts[motherIdx].pdgId) == ancestorPdg): return True
             motherIdx = genParts[motherIdx].genPartIdxMother
         return False
-        
+
+    def getAncestorIdx(self, p, ancestorPdg, genParts):
+        motherIdx = p.genPartIdxMother
+        while motherIdx>=0:
+            if (abs(genParts[motherIdx].pdgId) == ancestorPdg): return motherIdx
+            motherIdx = genParts[motherIdx].genPartIdxMother
+        return -1
 
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
@@ -113,14 +125,30 @@ class GenAnalyzer(Module):
         spectator = []
 
         GenParts    = Collection(event, "GenPart")
+        GenJets     = Collection(event, "GenJet")
 
         tops = [ p for p in GenParts if (abs(p.pdgId)==6 and hasBit(p.statusFlags,13) ) ] # last copy ts
         #print len(tops)
 
-        Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
+        #Ws = [ (p, idx) for idx, p in enumerate(GenParts) if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
+        Ws = []
+        for idx, p in enumerate(GenParts):
+            if abs(p.pdgId)==24 and hasBit(p.statusFlags,13):
+                p.idx = idx
+                Ws.append(p)
+            
 
         leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
         taus    = [ p for p in GenParts if ((abs(p.pdgId)==15) and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0) ) ]
+
+        quarks  = [ p for p in GenParts if ((abs(p.pdgId)<5)  and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0)  and self.hasAncestor(p, 24, GenParts) and (GenParts[p.genPartIdxMother].pdgId==p.pdgId or abs(GenParts[p.genPartIdxMother].pdgId)==24)) ] # status 71, 52, 51?
+        #print '##', len(quarks), len(Ws), event.event, event.run, event.luminosityBlock
+        #for q in quarks:
+        #    print q.pdgId, q.status
+        for quark in quarks:
+            idx = self.getAncestorIdx(quark, 24, GenParts)
+            quark.WIdx = idx
+
 
         scatter = [ p for p in GenParts if (p.genPartIdxMother==0 or p.genPartIdxMother==1) ] # get the intial particles from 2->N scattering
         
@@ -137,6 +165,21 @@ class GenAnalyzer(Module):
             lep.fromZ = ( 1 if self.hasAncestor(lep, 23, GenParts) else 0 )
             lep.fromW = ( 1 if self.hasAncestor(lep, 24, GenParts) else 0 )
 
+        for jet in GenJets:
+            jet.genPartWIdx = -1 # this is the reference to the W in the GenPart collection
+            jet.WIdx = -1 # this is the reference to the W in the W collection
+            matched = False
+            for quark in quarks:
+                if self.deltaR(jet, quark)<0.4:
+                    matched = True
+                    jet.genPartWIdx = quark.WIdx
+                    break
+            if matched:
+                for idx, W in enumerate(Ws):
+                    if jet.genPartWIdx == W.idx:
+                        jet.WIdx = idx
+            jet.fromW = matched
+
         #print len(tops), len(Ws), len(scatter), len(spectator), len(leptons)
 
         ## spectator for our signal results in forward jet :)
@@ -152,6 +195,11 @@ class GenAnalyzer(Module):
         self.out.fillBranch("nLepFromZ",   sum( [ l.fromZ for l in leptons ] ) )
 
         self.out.fillBranch("nGenTau",        len(taus) )
+
+        if len(GenJets)>0:
+            self.out.fillBranch("GenJet_fromW", [ j.fromW for j in GenJets])
+            self.out.fillBranch("GenJet_genPartWIdx", [ j.genPartWIdx for j in GenJets])
+            self.out.fillBranch("GenJet_WIdx", [ j.WIdx for j in GenJets])
 
         self.out.fillBranch("nGenL",          len(leptons) )
         if len(leptons)>0:
@@ -184,8 +232,10 @@ class GenAnalyzer(Module):
             self.out.fillBranch("W_pt",        [ p.pt    for p in Ws ])
             self.out.fillBranch("W_eta",       [ p.eta   for p in Ws ])
             self.out.fillBranch("W_phi",       [ p.phi   for p in Ws ])
+            self.out.fillBranch("W_mass",      [ p.mass  for p in Ws ])
             self.out.fillBranch("W_pdgId",     [ p.pdgId for p in Ws ])
             self.out.fillBranch("W_fromTop",   [ p.fromTop for p in Ws ])
+            self.out.fillBranch("W_genPartIdx",   [ p.idx for p in Ws ])
 
         self.out.fillBranch("nTop",          len(tops) )
         if len(tops)>0:
