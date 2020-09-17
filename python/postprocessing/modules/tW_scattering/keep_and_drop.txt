@@ -52,9 +52,23 @@ keep Electron_pfRelIso03_all
 keep Electron_cutBased
 keep Electron_dxy
 keep Electron_dz
+keep Electron_sip3d
 keep Electron_pdgId
 keep Electron_isTight
 keep Electron_isVeto
+keep Electron_deltaEtaSC
+keep Electron_eCorr
+keep Electron_eInvMinusPInv
+keep Electron_energyErr
+keep Electron_ip3d
+keep Electron_tightCharge
+keep Electron_miniPFRelIso_all
+keep Electron_lostHits
+keep Electron_mvaFall17V2noIso
+keep Electron_mvaFall17V1noIso
+keep Electron_hoe
+keep Electron_sieie
+
 
 keep Muon_pt
 keep Muon_phi
@@ -66,9 +80,13 @@ keep Muon_dz
 keep Muon_mvaTTH
 keep Muon_pfRelIso03_all
 keep Muon_mediumId
+keep Muon_looseId
 keep Muon_pdgId
 keep Muon_isTight
 keep Muon_isVeto
+keep Muon_sip3d
+keep Muon_ptErr
+keep Muon_miniPFRelIso_all
 
 keep GenMET*
 keep MET*
