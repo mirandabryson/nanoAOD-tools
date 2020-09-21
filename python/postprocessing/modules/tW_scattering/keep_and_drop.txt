@@ -23,7 +23,6 @@ keep Jet_isGoodBJet
 keep Jet_leptonClean
 keep Jet_qgl
 keep Jet_WIdx
-keep Jet_genPartIdx
 
 keep FatJet_pt
 keep FatJet_phi
