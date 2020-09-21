@@ -23,6 +23,7 @@ keep Jet_isGoodBJet
 keep Jet_leptonClean
 keep Jet_qgl
 keep Jet_WIdx
+keep Jet_genPartIdx
 
 keep FatJet_pt
 keep FatJet_phi
@@ -68,7 +69,10 @@ keep Electron_mvaFall17V2noIso
 keep Electron_mvaFall17V1noIso
 keep Electron_hoe
 keep Electron_sieie
-
+keep Electron_jetRelIso
+keep Electron_jetPtRelv2
+keep Electron_genPartIdx
+keep Electron_genPartFlav
 
 keep Muon_pt
 keep Muon_phi
@@ -87,6 +91,10 @@ keep Muon_isVeto
 keep Muon_sip3d
 keep Muon_ptErr
 keep Muon_miniPFRelIso_all
+keep Muon_jetRelIso
+keep Muon_jetPtRelv2
+keep Muon_genPartIdx
+keep Muon_genPartFlav
 
 keep GenMET*
 keep MET*
