@@ -10,14 +10,35 @@ keep Genb*
 keep Genj*
 
 #Leptons
+keep Electron_pdgId
+keep Electron_mass
+keep Electron_phi
 keep Electron_pt
 keep Electron_eta
 keep Electron_*RelIso*
+keep Muon_pdgId
+keep Muon_mass
+keep Muon_phi
 keep Muon_pt
 keep Muon_eta
 keep Muon_*RelIso*
+keep Muon_tightId
+keep Muon_mediumId
+keep Muon_looseId
+keep Tau_pdgId
+keep Tau_mass
+keep Tau_phi
+keep Tau_pt
+keep Tau_eta
+keep Tau_*RelIso*
+keep Tau_idMVAnewDM2017v2
+keep Tau_idDecayMode
 keep nVetoTau
-keep IsoTrack*
+keep IsoTrack_pdgId
+keep IsoTrack_phi
+keep IsoTrack_pt
+keep IsoTrack_eta
+keep IsoTrack_*RelIso*
 keep nVetoIsoTrack
 
 #Jets
