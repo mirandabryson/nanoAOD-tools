@@ -1,44 +1,78 @@
 # this is a comment
 drop * # start with all
-keep Jet*
-keep FatJet*
+
+#GenInfo
 keep GenJet*
-keep Electron*
-keep Muon*
-keep Tau*
+keep GenMET*
+keep GenW*
+keep GenH*
+keep Genb*
+keep Genj*
+
+#Leptons
+keep Electron_pt
+keep Electron_eta
+keep Electron_*RelIso*
+keep Muon_pt
+keep Muon_eta
+keep Muon_*RelIso*
 keep nVetoTau
 keep IsoTrack*
 keep nVetoIsoTrack
+
+#Jets
+keep Jet*
+keep GoodJet*
+keep nBJet
+keep BJet*
+
+#FatJets
+keep FatJet_deepTagMD_HbbvsQCD
+keep FatJet_deepTagMD_WvsQCD
+keep FatJet_eta
+keep FatJet_phi
+keep FatJet_pt
+keep FatJet_mass
+keep FatJet_msoftdrop
+keep nFatJet
+keep GoodFatJet*
+keep nBFatJet
+keep BFatJet* 
+
+#MET
 keep MET*
-keep Lepton*
+
+#Higgs
+keep nH
+keep bjetmatchedH*
+keep nbb
+keep bb*
+keep ak4matchedH*
+
+#W Boson
+keep nW
+keep W*
+keep njj
+keep jj*
+
+#Event Kinematics
+keep MTWmet
+keep MTHmet
+keep Dphi*
+keep mindphijmet
+keep minMTbmet
+keep MTak8jmet
+keep nWH
+keep WHptMET
+keep njmH
+keep nbmH
+
+#Triggers
+keep HLT_PFMET*
+
+#General Event Info
 keep event
 keep run
 keep luminosityBlock
 keep genWeight
 keep weight
-keep GoodJet*
-keep GoodFatJet*
-keep nBJet
-keep BJet*
-keep nBFatJet
-keep BFatJet*
-keep nW
-keep W*
-keep MTWmet
-keep nH
-keep H*
-keep MTHmet
-keep nWH
-keep WHptMET
-keep nbb
-keep bb*
-keep njj
-keep jj*
-keep Dphi*
-keep mindphijmet
-keep minMTbmet
-keep MTak8jmet
-keep ak4matchedH*
-keep njmH
-keep bjetmatchedH*
-keep nbmH
