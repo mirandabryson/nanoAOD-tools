@@ -33,12 +33,11 @@ modules = [\
     ]
 
 
-# apply PV requirement
+# apply PV requirement	
 cut  = 'PV_ndof>4 && sqrt(PV_x*PV_x+PV_y*PV_y)<=2 && abs(PV_z)<=24'
-# loose skim
-cut += '&& (Sum$(Electron_pt>30&&abs(Electron_eta)<2.4&&Electron_miniPFRelIso_all<0.1&&Electron_cutBased>=3)+Sum$(Muon_pt>25&&abs(Muon_eta)<2.4&&Muon_mediumId>0&&Muon_miniPFRelIso_all<0.1))>0'
-cut += '&& ( (Sum$(Jet_pt>25&&abs(Jet_eta)<2.4)>=4) || (Sum$(Jet_pt>25&&abs(Jet_eta)<2.4)>=2 && (Sum$(Electron_pt>10&&abs(Electron_eta)<2.4)+Sum$(Muon_pt>10&&abs(Muon_eta)<2.4&&Muon_mediumId>0))>=3) )'
-
+# loose skim	
+cut += '&& MET_pt>200'
+cut += '&& Sum$(Jet_pt>30&&abs(Jet_eta<2.4))>=2'
 
 p = PostProcessor('./', files, cut=cut, modules=modules,fwkJobReport=True, prefetch=True,\
 #    branchsel='PhysicsTools/NanoAODTools/python/postprocessing/modules/tW_scattering/keep_and_drop_in.txt',\

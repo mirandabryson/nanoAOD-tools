@@ -25,12 +25,10 @@ keep Muon_*RelIso*
 keep Muon_tightId
 keep Muon_mediumId
 keep Muon_looseId
-keep Tau_pdgId
 keep Tau_mass
 keep Tau_phi
 keep Tau_pt
 keep Tau_eta
-keep Tau_*RelIso*
 keep Tau_idMVAnewDM2017v2
 keep Tau_idDecayMode
 keep nVetoTau
@@ -42,7 +40,15 @@ keep IsoTrack_*RelIso*
 keep nVetoIsoTrack
 
 #Jets
-keep Jet*
+keep nJet
+keep Jet_jetId
+keep Jet_mass 
+keep Jet_pt 
+keep Jet_eta 
+keep Jet_phi
+keep Jet_btag*
+keep Jet_genJetIdx
+keep Jet_*Flavour
 keep GoodJet*
 keep nBJet
 keep BJet*
