@@ -1,6 +1,7 @@
 # this is a comment
 drop * # start with all
 
+keep nJet
 keep Jet_pt
 keep Jet_pt_nom
 keep Jet_phi
@@ -24,6 +25,7 @@ keep Jet_leptonClean
 keep Jet_qgl
 keep Jet_WIdx
 
+keep nFatJet
 keep FatJet_pt
 keep FatJet_phi
 keep FatJet_eta
@@ -32,6 +34,7 @@ keep FatJet_btagDeepB
 keep FatJet_deepTagMD_TvsQCD
 keep FatJet_deepTagMD_WvsQCD
 
+keep nGenJet
 keep GenJet_pt
 keep GenJet_phi
 keep GenJet_eta
@@ -41,6 +44,7 @@ keep GenJet_partonFlavour
 keep GenJet_fromW
 keep GenJet_WIdx
 
+keep nElectron
 keep Electron_pt
 keep Electron_phi
 keep Electron_eta
@@ -73,6 +77,7 @@ keep Electron_jetPtRelv2
 keep Electron_genPartIdx
 keep Electron_genPartFlav
 
+keep nMuon
 keep Muon_pt
 keep Muon_phi
 keep Muon_eta
@@ -98,6 +103,28 @@ keep Muon_genPartFlav
 keep GenMET*
 keep MET*
 keep PuppiMET*
+
+keep nTau
+keep Tau_pt
+keep Tau_eta
+keep Tau_phi
+keep Tau_mass
+keep Tau_idDecayMode
+keep Tau_idMVAnewDM2017v2
+keep Tau_dxy
+keep Tau_dz
+keep Tau_charge
+
+keep nIsoTrack
+keep IsoTrack_pt
+keep IsoTrack_eta
+keep IsoTrack_phi
+keep IsoTrack_dxy
+keep IsoTrack_dz
+keep IsoTrack_fromPV
+keep IsoTrack_pdgId
+keep IsoTrack_pfRelIso03_all
+keep IsoTrack_pfRelIso03_chg
 
 keep Lepton*
 keep event
