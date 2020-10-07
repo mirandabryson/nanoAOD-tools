@@ -56,6 +56,9 @@ keep BJet*
 #FatJets
 keep FatJet_deepTagMD_HbbvsQCD
 keep FatJet_deepTagMD_WvsQCD
+keep FatJet_deepTag_WvsQCD
+keep FatJet_deepTag_H
+keep FatJet_deepTagMD_bbvsLight
 keep FatJet_eta
 keep FatJet_phi
 keep FatJet_pt
