@@ -8,6 +8,8 @@ keep GenW*
 keep GenH*
 keep Genb*
 keep Genj*
+keep GenL*
+keep GenModel_TChiWH*
 
 #Leptons
 keep Electron_pdgId
@@ -16,6 +18,7 @@ keep Electron_phi
 keep Electron_pt
 keep Electron_eta
 keep Electron_*RelIso*
+keep Electron_cutBased
 keep Muon_pdgId
 keep Muon_mass
 keep Muon_phi
@@ -38,6 +41,7 @@ keep IsoTrack_pt
 keep IsoTrack_eta
 keep IsoTrack_*RelIso*
 keep nVetoIsoTrack
+keep nLep*
 
 #Jets
 keep nJet
@@ -64,6 +68,7 @@ keep FatJet_phi
 keep FatJet_pt
 keep FatJet_mass
 keep FatJet_msoftdrop
+keep FatJet_jetId
 keep nFatJet
 keep GoodFatJet*
 keep nBFatJet

@@ -67,7 +67,22 @@ class GenAnalyzer(Module):
         self.out.branch("Genj_phi", "F",        lenVar="ngenj")
         self.out.branch("Genj_pdgId", "I",    lenVar="ngen")
         self.out.branch("Genj_fromW", "I",    lenVar="ngenj")
-        
+
+        #Re-adding genLepton and nLep info
+        self.out.branch("GenL_pt", "F",         lenVar="nGenL")
+        self.out.branch("GenL_eta", "F",        lenVar="nGenL")
+        self.out.branch("GenL_phi", "F",        lenVar="nGenL")
+        self.out.branch("GenL_pdgId", "I",      lenVar="nGenL")
+        self.out.branch("GenL_fromTop", "I",    lenVar="nGenL")
+        self.out.branch("GenL_fromTau", "I",    lenVar="nGenL")
+        self.out.branch("GenL_fromZ", "I",    lenVar="nGenL")
+        self.out.branch("GenL_fromW", "I",    lenVar="nGenL")
+
+        self.out.branch("nLepFromTop",     "I")
+        self.out.branch("nLepFromTau",    "I")
+        self.out.branch("nLepFromW",    "I")
+        self.out.branch("nLepFromZ",    "I")
+
         #miranda time
         self.out.branch("GenDeltaRbb", "F",   lenVar="ngenbb")
         self.out.branch("GenMCT", "F",        lenVar="ngenbb")
@@ -148,6 +163,8 @@ class GenAnalyzer(Module):
 
         Ws = [ p for p in GenParts if (abs(p.pdgId)==24 and hasBit(p.statusFlags,13) ) ] # last copy Ws
 
+        leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
+
         js = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 5 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
 
         nonbjs = [ p for p in GenParts if ((abs(p.pdgId) == 1 or abs(p.pdgId) == 2 or abs(p.pdgId) == 3 or abs(p.pdgId) == 4 or abs(p.pdgId) == 6) and hasBit(p.statusFlags, 7))] 
@@ -158,6 +175,11 @@ class GenAnalyzer(Module):
         bs = [ p for p in GenParts if (abs(p.pdgId) == 5 and hasBit(p.statusFlags, 7))]  #hard scatter bs
 
 
+        for lep in leptons:
+            lep.fromTop = ( 1 if self.hasAncestor(lep, 6, GenParts) else 0 )
+            lep.fromTau = ( 1 if self.hasAncestor(lep, 15, GenParts) else 0 )
+            lep.fromZ = ( 1 if self.hasAncestor(lep, 23, GenParts) else 0 )
+            lep.fromW = ( 1 if self.hasAncestor(lep, 24, GenParts) else 0 )
 
         for j in js:
           j.fromW = (1 if self.hasAncestor(j, 24, GenParts) else 0 )
@@ -303,6 +325,22 @@ class GenAnalyzer(Module):
 #          self.out.fillBranch("GenMT2_bbjj",       mt2bbjj)
 #          self.out.fillBranch("GenMT2_bjjb",       mt2bjjb)
 
+        self.out.fillBranch("nLepFromTop", sum( [ l.fromTop for l in leptons ] ) )
+        self.out.fillBranch("nLepFromTau", sum( [ l.fromTau for l in leptons ] ) )
+        self.out.fillBranch("nLepFromW",   sum( [ l.fromW for l in leptons ] ) )
+        self.out.fillBranch("nLepFromZ",   sum( [ l.fromZ for l in leptons ] ) )
+
+        self.out.fillBranch("nGenL",          len(leptons) )
+        if len(leptons)>0:
+            self.out.fillBranch("GenL_pt",        [ l.pt for l in leptons ])
+            self.out.fillBranch("GenL_eta",       [ l.eta for l in leptons ])
+            self.out.fillBranch("GenL_phi",       [ l.phi for l in leptons ])
+            self.out.fillBranch("GenL_pdgId",     [ l.pdgId for l in leptons ])
+            self.out.fillBranch("GenL_fromTop",   [ l.fromTop for l in leptons ])
+            self.out.fillBranch("GenL_fromTau",   [ l.fromTau for l in leptons ])
+            self.out.fillBranch("GenL_fromW",     [ l.fromW for l in leptons ])
+            self.out.fillBranch("GenL_fromZ",     [ l.fromZ for l in leptons ])
+            
 
         self.out.fillBranch("ngenW",          len(Ws) )
         if len(Ws)>0:
