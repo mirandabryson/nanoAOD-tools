@@ -9,6 +9,7 @@ keep Jet_eta
 keep Jet_mass
 keep Jet_mass_nom
 keep Jet_btagDeepB
+keep Jet_btagDeepFlavB
 keep Jet_genJetIdx
 keep Jet_hadronFlavour
 keep Jet_jetId
@@ -52,6 +53,8 @@ keep Electron_charge
 keep Electron_mass
 keep Electron_convVeto
 keep Electron_mvaTTH
+keep Electron_mvaFall17V2noIso_WPL
+keep Electron_mvaFall17V2noIso_WP80
 keep Electron_pfRelIso03_all
 keep Electron_cutBased
 keep Electron_dxy
@@ -76,6 +79,7 @@ keep Electron_jetRelIso
 keep Electron_jetPtRelv2
 keep Electron_genPartIdx
 keep Electron_genPartFlav
+keep Electron_jetIdx
 
 keep nMuon
 keep Muon_pt
@@ -99,6 +103,7 @@ keep Muon_jetRelIso
 keep Muon_jetPtRelv2
 keep Muon_genPartIdx
 keep Muon_genPartFlav
+keep Muon_jetIdx
 
 keep GenMET*
 keep MET*
