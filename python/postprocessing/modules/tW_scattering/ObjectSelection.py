@@ -23,8 +23,9 @@ class Object():
 
 class PhysicsObjects(Module):
 
-    def __init__(self, year=2018):
+    def __init__(self, year=2018, isData=False):
         self.year = year
+        self.isData = isData
         pass
 
     def beginJob(self):
@@ -195,8 +196,9 @@ class PhysicsObjects(Module):
         muons       = Collection(event, "Muon")
         electrons   = Collection(event, "Electron")
         jets        = Collection(event, "Jet")
-        genjets     = Collection(event, "GenJet")
-        genW        = Collection(event, "W")
+        if not self.isData:
+            genjets     = Collection(event, "GenJet")
+            genW        = Collection(event, "W")
         
         # MET
         met_pt  = event.MET_pt
@@ -278,10 +280,12 @@ class PhysicsObjects(Module):
             
             cleanMaskV.append(j.cleanMask)
 
+
             # now get some info from the GenJets
             j.WIdx = -1
-            if j.genJetIdx>-1 and j.genJetIdx<len(genjets): # apparently lowest pt genjets are not stored...
-                j.WIdx = genjets[j.genJetIdx].WIdx
+            if not self.isData:
+                if j.genJetIdx>-1 and j.genJetIdx<len(genjets): # apparently lowest pt genjets are not stored...
+                    j.WIdx = genjets[j.genJetIdx].WIdx
             WIdx.append(j.WIdx)
 
             alljets.append({'pt':j.pt, 'eta':j.eta, 'phi':j.phi, 'qgl':j.qgl, 'WIdx':j.WIdx})
@@ -326,7 +330,7 @@ class PhysicsObjects(Module):
         # get any combination of 4 non b-jets
         # this is *very* inefficient. Need to think of a better way to reconstruct two Ws
         recoWs = []
-        if len(jets_out)>3:
+        if len(jets_out)>3 and not self.isData:
             #W_cands = self.getWcandidates(nonbjets)
             recoWs = self.getRealWs(jets_out, genW)
             
@@ -413,4 +417,4 @@ class PhysicsObjects(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-selector2018 = lambda : PhysicsObjects( year=2018 )
+selector = lambda year, isData : PhysicsObjects( year=year, isData=isData )

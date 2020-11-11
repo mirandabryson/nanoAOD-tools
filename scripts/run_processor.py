@@ -13,25 +13,46 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.tW_scattering.lumiWeightPr
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetHelperRun2       import *
 
-jetmet = createJMECorrector(isMC=True, dataYear=2018, jesUncert="Total", jetType = "AK4PFchs", applySmearing = True, isFastSim = False )
 
-files = sys.argv[1].split(',')
+files       = sys.argv[1].split(',')
+lumiWeight  = float(sys.argv[2])
+isData      = int(sys.argv[3]) == 1
+year        = int(sys.argv[4])
+era         = sys.argv[5]
+isFastSim   = int(sys.argv[6]) == 1
 
 if files[0].startswith('/store/'):
     print "Had to add a prefix"
     files = [ 'root://cmsxrootd.fnal.gov/' + f for f in files ]
 
 #json support to be added
-print "Sumweight:", sys.argv[2]
+print "Sumweight:", lumiWeight
+print "Data:", isData
+print "Year:", year
+print "FastSim", isFastSim 
 print "Files:", files
 
+jetmet = createJMECorrector(isMC=(not isData), dataYear=year, runPeriod=era, jesUncert="Total", jetType = "AK4PFchs", applySmearing = True, isFastSim = isFastSim )
+
 modules = [\
-    lumiWeightProd(float(sys.argv[2])),
-    jetmet(),
-    genAnalyzer(),
-    selector2018(),
+    lumiWeightProd(lumiWeight, isData),
+    jetmet()
     ]
 
+if not isData:
+    modules += [genAnalyzer()]
+
+modules += [\
+    selector(year, isData),
+    ]
+
+if isData:
+    if year==2018:
+        jsonInput='PhysicsTools/NanoAODTools/python/postprocessing/modules/tW_scattering/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
+    else:
+        jsonInput=None # FIXME
+else:
+    jsonInput=None
 
 # apply PV requirement
 cut  = 'PV_ndof>4 && sqrt(PV_x*PV_x+PV_y*PV_y)<=2 && abs(PV_z)<=24'
@@ -43,6 +64,7 @@ cut += '|| (Sum$(Jet_pt>25&&abs(Jet_eta)<2.4)>=2 && (Sum$(Electron_pt>10&&abs(El
 
 p = PostProcessor('./', files, cut=cut, modules=modules,fwkJobReport=True, prefetch=True,\
 #    branchsel='PhysicsTools/NanoAODTools/python/postprocessing/modules/tW_scattering/keep_and_drop_in.txt',\
-    outputbranchsel='PhysicsTools/NanoAODTools/python/postprocessing/modules/tW_scattering/keep_and_drop.txt' )
+    outputbranchsel='PhysicsTools/NanoAODTools/python/postprocessing/modules/tW_scattering/keep_and_drop.txt',
+    jsonInput=jsonInput )
 
 p.run()

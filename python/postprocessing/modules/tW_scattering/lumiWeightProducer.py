@@ -44,5 +44,5 @@ class lumiWeightProducer(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-lumiWeightProd = lambda x : lumiWeightProducer( x )
+lumiWeightProd = lambda x, isData : lumiWeightProducer( x, isData )
 
