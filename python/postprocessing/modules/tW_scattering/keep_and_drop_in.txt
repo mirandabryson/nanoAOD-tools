@@ -8,7 +8,9 @@ keep Electron*
 keep Muon*
 keep Tau*
 keep IsoTrack*
+keep GenMET*
 keep MET*
+keep PuppiMET*
 keep event
 keep run
 keep luminosityBlock

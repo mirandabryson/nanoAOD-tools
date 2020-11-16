@@ -2,14 +2,14 @@
 drop * # start with all
 
 #GenInfo
-keep GenJet*
-keep GenMET*
-keep GenW*
-keep GenH*
-keep Genb*
-keep Genj*
-keep GenL*
-keep GenModel_TChiWH*
+#keep GenJet*
+#keep GenMET*
+#keep GenW*
+#keep GenH*
+#keep Genb*
+#keep Genj*
+#keep GenL*
+#keep GenModel_TChiWH*
 
 #Leptons
 keep Electron_pdgId
@@ -51,8 +51,8 @@ keep Jet_pt
 keep Jet_eta 
 keep Jet_phi
 keep Jet_btag*
-keep Jet_genJetIdx
-keep Jet_*Flavour
+#keep Jet_genJetIdx
+#keep Jet_*Flavour
 keep GoodJet*
 keep nBJet
 keep BJet*
@@ -76,6 +76,7 @@ keep BFatJet*
 
 #MET
 keep MET*
+keep Flag_*
 
 #Higgs
 keep nH
@@ -91,12 +92,12 @@ keep njj
 keep jj*
 
 #Event Kinematics
-keep MTWmet
-keep MTHmet
-keep Dphi*
-keep mindphijmet
-keep minMTbmet
-keep MTak8jmet
+#keep MTWmet
+#keep MTHmet
+#keep Dphi*
+#keep mindphijmet
+#keep minMTbmet
+#keep MTak8jmet
 keep nWH
 keep WHptMET
 keep njmH
@@ -109,5 +110,5 @@ keep HLT_PFMET*
 keep event
 keep run
 keep luminosityBlock
-keep genWeight
+#keep genWeight
 keep weight
