@@ -31,7 +31,11 @@ def hasBit(value,bit):
 
 class GenAnalyzer(Module):
 
-    def __init__(self):
+    def __init__(self,isW,isWExt):
+        self.isW = isW
+        self.isWExt = isWExt
+        print isW
+        print isWExt
         pass
 
     def beginJob(self):
@@ -97,7 +101,6 @@ class GenAnalyzer(Module):
         self.out.branch("W_phi", "F",        lenVar="nW")
         self.out.branch("W_mass", "F",    lenVar="nW")
         self.out.branch("W_pdgId", "I",    lenVar="nW")
-        self.out.branch("W_fromTop", "I",    lenVar="nW")
         self.out.branch("W_genPartIdx", "I",    lenVar="nW")
 
         self.out.branch("Top_pt", "F",         lenVar="nTop")
@@ -131,6 +134,8 @@ class GenAnalyzer(Module):
         self.out.branch("Genak8j_eta", "F",     lenVar="ngenak8jet")
         self.out.branch("Genak8j_phi", "F",     lenVar="ngenak8jet")
 
+        #etc variables
+        self.out.branch("stitch", "B")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -209,6 +214,7 @@ class GenAnalyzer(Module):
             
 
         leptons = [ p for p in GenParts if ((abs(p.pdgId)==11 or abs(p.pdgId)==13) and hasBit(p.statusFlags,13) and (hasBit(p.statusFlags,0) or hasBit(p.statusFlags, 2)) ) ]
+        neutrinos = [ p for p in GenParts if ((abs(p.pdgId)==12 or abs(p.pdgId)==14 or abs(p.pdgId)==16) and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0) and p.status==1 ) ]
         taus    = [ p for p in GenParts if ((abs(p.pdgId)==15) and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0) ) ]
 
         quarks  = [ p for p in GenParts if ((abs(p.pdgId)<5)  and hasBit(p.statusFlags,13) and hasBit(p.statusFlags,0)  and self.hasAncestor(p, 24, GenParts) and (GenParts[p.genPartIdxMother].pdgId==p.pdgId or abs(GenParts[p.genPartIdxMother].pdgId)==24)) ] # status 71, 52, 51?
@@ -235,6 +241,17 @@ class GenAnalyzer(Module):
             lep.fromTau = ( 1 if self.hasAncestor(lep, 15, GenParts) else 0 )
             lep.fromZ = ( 1 if self.hasAncestor(lep, 23, GenParts) else 0 )
             lep.fromW = ( 1 if self.hasAncestor(lep, 24, GenParts) else 0 )
+
+        for j in js:
+          j.fromW = (1 if self.hasAncestor(j, 24, GenParts) else 0 )
+
+        stitch = True
+        if self.isW:
+            sumPt = 0
+            for nu in neutrinos:
+                sumPt = sumPt + nu.pt
+            if self.isWExt and sumPt <200: stitch = False
+            if not self.isWExt and sumPt >200: stitch = False
 
         for jet in GenJets:
             jet.genPartWIdx = -1 # this is the reference to the W in the GenPart collection
@@ -459,7 +476,6 @@ class GenAnalyzer(Module):
             self.out.fillBranch("W_phi",       [ p.phi   for p in Ws ])
             self.out.fillBranch("W_mass",      [ p.mass  for p in Ws ])
             self.out.fillBranch("W_pdgId",     [ p.pdgId for p in Ws ])
-            self.out.fillBranch("W_fromTop",   [ p.fromTop for p in Ws ])
             self.out.fillBranch("W_genPartIdx",   [ p.idx for p in Ws ])
 
         self.out.fillBranch("nTop",          len(tops) )
@@ -469,8 +485,10 @@ class GenAnalyzer(Module):
             self.out.fillBranch("Top_phi",       [ p.phi   for p in tops ])
             self.out.fillBranch("Top_pdgId",     [ p.pdgId for p in tops ])
 
+        self.out.fillBranch("stitch",     stitch  )
+
         return True
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-genAnalyzer = lambda : GenAnalyzer( )
+genAnalyzer = lambda  isW, isWExt : GenAnalyzer( isW=isW, isWExt=isWExt )

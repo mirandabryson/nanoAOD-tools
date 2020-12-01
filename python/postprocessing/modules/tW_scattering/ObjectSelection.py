@@ -328,7 +328,7 @@ class PhysicsObjects(Module):
         fatjets     = Collection(event, "FatJet")
         if not self.isData:
             genjets     = Collection(event, "GenJet")
-            genW        = Collection(event, "W")
+        #    genW        = Collection(event, "W")
         
         # MET
         met_pt  = event.MET_pt
@@ -633,9 +633,9 @@ class PhysicsObjects(Module):
         # get any combination of 4 non b-jets
         # this is *very* inefficient. Need to think of a better way to reconstruct two Ws
         recoWs = []
-        if len(jets_out)>3 and not self.isData:
+#        if len(jets_out)>3 and not self.isData:
             #W_cands = self.getWcandidates(nonbjets)
-            recoWs = self.getRealWs(jets_out, genW)
+#            recoWs = self.getRealWs(jets_out, genW)
             
 
         ### This doesn't really work
@@ -694,7 +694,6 @@ class PhysicsObjects(Module):
             self.out.fillBranch("ak4matchedH_eta",   jmatchH_pd['eta'].tolist())
             self.out.fillBranch("ak4matchedH_phi",   jmatchH_pd['phi'].tolist())
     
-
         bmatchH_pd = pd.DataFrame(bmatchH)
         self.out.fillBranch("nbmH",             len(bmatchH_pd))
         if len(bmatchH_pd)>0:

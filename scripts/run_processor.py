@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import re
 
 from importlib import import_module
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor   import PostProcessor
@@ -41,7 +42,14 @@ modules = [\
     ]
 
 if not isData:
-    modules += [genAnalyzer()]
+    isW = False
+    isWExt = False
+    for f in files:
+        print f
+        if re.search("W[1-4]Jets", f): isW=(True)
+        if re.search("NuPt", f): isWExt.append(True) 
+        print isW, isWExt
+    modules += [genAnalyzer(isW, isWExt)]
 
 modules += [\
     selector(year, isData),
