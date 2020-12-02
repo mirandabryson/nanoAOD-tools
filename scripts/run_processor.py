@@ -46,8 +46,8 @@ if not isData:
     isWExt = False
     for f in files:
         print f
-        if re.search("W[1-4]Jets", f): isW=(True)
-        if re.search("NuPt", f): isWExt.append(True) 
+        if re.search("W[1-4]Jets", f): isW=True
+        if re.search("NuPt", f): isWExt=True
         print isW, isWExt
     modules += [genAnalyzer(isW, isWExt)]
 
